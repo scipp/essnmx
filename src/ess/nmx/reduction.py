@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import NewType
 
 import sciline as sl
@@ -10,6 +11,15 @@ DefaultTimeBinStep = TimeBinStep(1)
 Distance = NewType("Distance", sc.Variable)
 Vector3D = NewType("Vector3D", sc.Variable)
 RotationMatirx = NewType("RotationMatirx", sc.Variable)
+
+
+@dataclass
+class PixelIDIntervals(sl.domain.Generic[FileType]):
+    """Pixel IDs for each detector"""
+
+    interval_1: tuple
+    interval_2: tuple
+    interval_3: tuple
 
 
 class PixelIDs(sl.Scope[sc.Variable, FileType]):
@@ -54,26 +64,26 @@ def rotation_matrix(axis: Vector3D, theta: RotationAngle) -> RotationMatirx:
     )
 
 
-def _get_ids(*intervals) -> PixelIDs:
+def get_intervals() -> PixelIDIntervals[FileTypeNMX]:
+    """Pixel ID intervals for each detector"""
+    return PixelIDIntervals[FileTypeNMX](
+        (1, 1638401), (1638401, 3276802), (3276802, 4915203)
+    )
+
+
+def get_intervals_mcstas() -> PixelIDIntervals[FileTypeMcStas]:
+    """Pixel IDs intervals for each detector"""
+    return PixelIDIntervals[FileTypeMcStas](
+        (1, 1638401), (2000001, 3638401), (4000001, 5638401)
+    )
+
+
+def get_ids(pixel_id_intervals: PixelIDIntervals[FileType]) -> PixelIDs[FileType]:
     """pixel IDs for each detector"""
+    intervals = [
+        pixel_id_intervals.interval_1,
+        pixel_id_intervals.interval_2,
+        pixel_id_intervals.interval_3,
+    ]
     ids = [sc.arange('id', start, stop, unit=None) for start, stop in intervals]
-    return PixelIDs(sc.concat(ids, 'id'))
-
-
-def get_ids() -> PixelIDs[FileTypeNMX]:
-    """pixel IDs for each detector"""
-    # TODO: Why are they different...?
-    id1_interval = (1, 1638401)
-    id2_interval = (1638401, 3276802)
-    id3_interval = (3276802, 4915203)
-
-    return _get_ids(id1_interval, id2_interval, id3_interval)
-
-
-def get_ids_mcstas() -> PixelIDs[FileTypeMcStas]:
-    """pixel IDs for each detector"""
-    id1_interval = (1, 1638401)
-    id2_interval = (2000001, 3638401)
-    id3_interval = (4000001, 5638401)
-
-    return _get_ids(id1_interval, id2_interval, id3_interval)
+    return PixelIDs[FileType](sc.concat(ids, 'id'))
