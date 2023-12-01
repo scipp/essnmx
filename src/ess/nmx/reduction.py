@@ -1,10 +1,13 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
+
 from dataclasses import dataclass
 from typing import NewType
 
 import sciline as sl
 import scipp as sc
 
-from .loader import FileType, FileTypeMcStas, FileTypeNMX
+from .loader import Events, FileType, FileTypeMcStasT, FileTypeNMX
 
 TimeBinStep = NewType("TimeBinStep", int)
 DefaultTimeBinStep = TimeBinStep(1)
@@ -22,8 +25,20 @@ class PixelIDIntervals(sl.domain.Generic[FileType]):
     interval_3: tuple
 
 
-class PixelIDs(sl.Scope[sc.Variable, FileType]):
+class PixelIDs(sl.Scope[FileType, sc.Variable], sc.Variable):
     """Pixel IDs for each detector"""
+
+    ...
+
+
+class Grouped(sl.Scope[FileType, sc.DataArray], sc.DataArray):
+    """Grouped events"""
+
+    ...
+
+
+class TimeBinned(sl.Scope[FileType, sc.DataArray], sc.DataArray):
+    """Time binned events"""
 
     ...
 
@@ -71,9 +86,14 @@ def get_intervals() -> PixelIDIntervals[FileTypeNMX]:
     )
 
 
-def get_intervals_mcstas() -> PixelIDIntervals[FileTypeMcStas]:
+def get_intervals_mcstas(
+    file_type: FileTypeMcStasT,
+) -> PixelIDIntervals[FileTypeMcStasT]:
     """Pixel IDs intervals for each detector"""
-    return PixelIDIntervals[FileTypeMcStas](
+    if file_type not in ('mcstas', 'mcstas_L'):
+        raise ValueError(f"file_type must be mcstas or mcstas_L, got {file_type}")
+
+    return PixelIDIntervals[FileTypeMcStasT](
         (1, 1638401), (2000001, 3638401), (4000001, 5638401)
     )
 
@@ -85,5 +105,28 @@ def get_ids(pixel_id_intervals: PixelIDIntervals[FileType]) -> PixelIDs[FileType
         pixel_id_intervals.interval_2,
         pixel_id_intervals.interval_3,
     ]
-    ids = [sc.arange('id', start, stop, unit=None) for start, stop in intervals]
+    ids = [sc.arange('id', start, stop) for start, stop in intervals]
     return PixelIDs[FileType](sc.concat(ids, 'id'))
+
+
+def get_grouped(da: Events[FileType], ids: PixelIDs[FileType]) -> Grouped[FileType]:
+    """group events by pixel ID"""
+    return Grouped[FileType](da.value.group(ids))
+
+
+def get_time_binned(
+    da: Grouped[FileType], time_bin_step: TimeBinStep
+) -> TimeBinned[FileType]:
+    """histogram events by time"""
+    return TimeBinned[FileType](da.hist(t=time_bin_step))
+
+
+providers = [
+    get_intervals_mcstas,
+    get_intervals,
+    get_ids,
+    get_grouped,
+    get_time_binned,
+]
+
+default_params = {TimeBinStep: DefaultTimeBinStep}

@@ -10,6 +10,7 @@
 hidden:
 ---
 
+examples/workflow
 api-reference/index
 developer/index
 about/index
