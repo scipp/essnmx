@@ -136,7 +136,7 @@ def read_h5file_mcstas(
 
     with snx.File(file_name) as file:
         var = file[data_path.entry_path][data_path.event_path][()].rename_dims(
-            {'dim_0': 'x', 'dim_1': 'property'}
+            {'dim_0': 'event', 'dim_1': 'property'}
         )
 
         property_recipes = {
