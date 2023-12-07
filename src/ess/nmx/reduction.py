@@ -7,7 +7,7 @@ from typing import NewType
 import sciline as sl
 import scipp as sc
 
-from .loader import Events, FileType, FileTypeMcStasT, FileTypeNMX
+from .loader import Events, FileType, FileTypeMcStas, FileTypeNMX
 
 TimeBinStep = NewType("TimeBinStep", int)
 DefaultTimeBinStep = TimeBinStep(1)
@@ -87,13 +87,13 @@ def get_intervals() -> PixelIDIntervals[FileTypeNMX]:
 
 
 def get_intervals_mcstas(
-    file_type: FileTypeMcStasT,
-) -> PixelIDIntervals[FileTypeMcStasT]:
+    file_type: FileTypeMcStas,
+) -> PixelIDIntervals[FileTypeMcStas]:
     """Pixel IDs intervals for each detector"""
     if file_type not in ('mcstas', 'mcstas_L'):
         raise ValueError(f"file_type must be mcstas or mcstas_L, got {file_type}")
 
-    return PixelIDIntervals[FileTypeMcStasT](
+    return PixelIDIntervals[FileTypeMcStas](  # Check McStas pixel number conuting
         (1, 1638401), (2000001, 3638401), (4000001, 5638401)
     )
 
@@ -111,7 +111,7 @@ def get_ids(pixel_id_intervals: PixelIDIntervals[FileType]) -> PixelIDs[FileType
 
 def get_grouped(da: Events[FileType], ids: PixelIDs[FileType]) -> Grouped[FileType]:
     """group events by pixel ID"""
-    return Grouped[FileType](da.value.group(ids))
+    return Grouped[FileType](da.group(ids))
 
 
 def get_time_binned(

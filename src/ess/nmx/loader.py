@@ -2,24 +2,32 @@
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 
 from dataclasses import dataclass
-from typing import Generic, NewType, TypeVar
+from typing import Generic, NewType, Optional, TypeVar
 
 import sciline as sl
 import scipp as sc
 
-MaximumPropability = NewType("MaximumPropability", int)
-DefaultMaximumPropability = MaximumPropability(100000)
-InputFileName = NewType("FileNameToBeRepacked", str)
-PreprocessedFileName = NewType("RepackedFileName", str)
-ChunkNeeded = NewType("ChunkNeeded", bool)
+from .logging import NMXLogger
 
-FileTypeMcStas = NewType("FileTypeMcStas", str)
-FileTypeMcStasL = NewType("FileTypeMcStasL", str)
-FileTypeNMX = NewType("FileTypeNMX", str)
-
+InputFileName = NewType("InputFileName", str)
 
 FileType = TypeVar("FileType")
-FileTypeMcStasT = TypeVar("FileTypeMcStasT")
+FileTypeNMX = NewType("FileTypeNMX", str)
+FileTypeMcStas = NewType("FileTypeMcStas", str)
+
+# McStas Configurations
+MaximumPropability = NewType("MaximumPropability", int)
+DefaultMaximumPropability = MaximumPropability(100000)
+
+
+class McStasEventDataSchema(str):
+    """McStas event data schema, suffix of the event data path."""
+
+    ...
+
+
+DefaultMcStasEventDataSchema = McStasEventDataSchema("p_x_y_n_id_t")
+McStasEventDataSchemaWithWaveLength = McStasEventDataSchema("p_x_y_n_id_t_L_L")
 
 
 def get_file_type_nmx() -> FileTypeNMX:
@@ -30,75 +38,50 @@ def get_file_type_mcstas() -> FileTypeMcStas:
     return FileTypeMcStas("mcstas")
 
 
-def get_file_type_mcstas_l() -> FileTypeMcStasL:
-    return FileTypeMcStasL("mcstas_L")
+@dataclass
+class LoadedData(sl.Scope[FileType, sc.DataGroup], sc.DataGroup):
+    ...
 
 
 @dataclass
-class LoadedData(Generic[FileType]):
-    value: sc.DataGroup
-
-
-@dataclass
-class XList(Generic[FileType]):
+class XList(sl.Scope[FileType, sc.Variable], sc.Variable):
     """List of x."""
 
-    value: sc.Variable
+    ...
 
 
 @dataclass
-class YList(Generic[FileType]):
+class YList(sl.Scope[FileType, sc.Variable], sc.Variable):
     """List of y."""
 
-    value: sc.Variable
+    ...
 
 
 @dataclass
-class Weights(Generic[FileType]):
+class Weights(sl.Scope[FileType, sc.Variable], sc.Variable):
     """Weights."""
 
-    value: sc.Variable
+    ...
 
 
 @dataclass
-class TList(Generic[FileType]):
+class TList(sl.Scope[FileType, sc.Variable], sc.Variable):
     """List of time."""
 
-    value: sc.Variable
+    ...
 
 
 @dataclass
-class IDList(Generic[FileType]):
+class IDList(sl.Scope[FileType, sc.Variable], sc.Variable):
     """List of IDs."""
 
-    value: sc.Variable
+    ...
 
 
 @dataclass
-class Events(sl.domain.Generic[FileType]):
-    """Events"""
+class Events(sl.Scope[FileType, sc.DataArray], sc.DataArray):
+    """Event data."""
 
-    value: sc.DataArray
-
-
-def preprocess_file(
-    file_name: InputFileName, chunk_needed: ChunkNeeded
-) -> PreprocessedFileName:
-    # TODO: Is it always needed?
-    # If so, we can do sth like...
-    # import subprocess
-    # if chunk_needed:
-    #     suffix = "-rechunk.h5"
-    #     chunk_size = "1024x6"
-    # else:
-    #     suffix = "-nochunk.h5"
-    #     chucnk_size = "NONE"
-
-    # processed_file_name = PreprocessedFileName(file_name.replace(".h5", suffix))
-
-    # subprocess.run(
-    #   ["h5repack", "-l", f"CHUNK={chunk_size}", file_name, processed_file_name]
-    # )
     ...
 
 
@@ -109,15 +92,16 @@ class DataPath(Generic[FileType]):
     file_type: type[FileType]
 
 
-def get_data_path_mcstas() -> DataPath[FileTypeMcStas]:
-    return DataPath(
-        "entry1/data/bank01_events_dat_list_p_x_y_n_id_t", "events", FileTypeMcStas
-    )
+def get_data_path_mcstas(
+    data_path_suffix: Optional[McStasEventDataSchema] = None,
+) -> DataPath[FileTypeMcStas]:
+    if data_path_suffix is None:
+        data_path_suffix = DefaultMcStasEventDataSchema
 
-
-def get_l_data_path_mcstas() -> DataPath[FileTypeMcStasL]:
     return DataPath(
-        "entry1/data/bank01_events_dat_list_p_x_y_n_id_t_L_L", "events", FileTypeMcStasL
+        f"entry1/data/bank01_events_dat_list_{data_path_suffix}",
+        "events",
+        FileTypeMcStas,
     )
 
 
@@ -135,49 +119,54 @@ def read_h5file(
     ...
 
 
+def _copy_partial_var(
+    var: sc.Variable, dim: str, idx: int, unit: str, dtype: Optional[str] = None
+) -> sc.Variable:
+    """Retrieve property from variable."""
+    original_var = var[dim, idx]
+    var = original_var.copy().astype(dtype) if dtype else original_var.copy()
+    var.unit = sc.Unit(unit)
+    return var
+
+
 def read_h5file_mcstas(
-    file_name: InputFileName, data_path: DataPath[FileTypeMcStasT]
-) -> LoadedData[FileTypeMcStasT]:
+    file_name: InputFileName, data_path: DataPath[FileTypeMcStas]
+) -> LoadedData[FileTypeMcStas]:
     import scippnexus as snx
 
     with snx.File(file_name) as file:
         var = file[data_path.entry_path][data_path.event_path][()].rename_dims(
             {'dim_0': 'x', 'dim_1': 'property'}
         )
-        weights = var['property', 0].copy()
-        weights.unit = sc.Unit('counts')
-        x_list = var['property', 1].copy()
-        x_list.unit = sc.Unit('m')
-        y_list = var['property', 2].copy()
-        y_list.unit = sc.Unit('m')
-        # TODO: What is in dim_1, 3?
-        id_list = var['property', 4].copy().astype('int64')
-        id_list.unit = sc.Unit('dimensionless')
-        t_list = var['property', 5].copy()
-        t_list.unit = sc.Unit('s')
+
+        property_recipes = {
+            'weights': {"idx": 0, "unit": 'counts'},
+            'x_list': {"idx": 1, "unit": 'm'},
+            'y_list': {"idx": 2, "unit": 'm'},
+            'id_list': {"idx": 4, "unit": 'dimensionless', "dtype": "int64"},
+            't_list': {"idx": 5, "unit": 's'},
+        }
 
         return LoadedData(
             sc.DataGroup(
-                weights=weights,
-                t_list=t_list,
-                id_list=id_list,
-                x_list=x_list,
-                y_list=y_list,
+                **{
+                    name: _copy_partial_var(var, dim='property', **recipe)
+                    for name, recipe in property_recipes.items()
+                }
             )
         )
 
 
 def get_weights(t_list: TList[FileTypeNMX]) -> Weights[FileTypeNMX]:
-    """get weight."""
+    """Get weights of measurement data."""
     return Weights(sc.ones_like(t_list.value))
 
 
 def get_weights_mcstas(
-    loaded_data: LoadedData[FileTypeMcStasT], max_prop: MaximumPropability
-) -> Weights[FileTypeMcStasT]:
-    """get weight."""
-    # delete for actual data  TODO: Check if this means file type.
-    weights = loaded_data.value['weights']
+    loaded_data: LoadedData[FileTypeMcStas], max_prop: MaximumPropability
+) -> Weights[FileTypeMcStas]:
+    """Get weights of McStas data."""
+    weights: Weights = loaded_data['weights']
 
     return Weights((max_prop / weights.max()) * weights)
 
@@ -187,10 +176,13 @@ def get_t_list(loaded_data: LoadedData[FileTypeNMX]) -> TList[FileTypeNMX]:
 
 
 def get_t_list_mcstas(
-    loaded_data: LoadedData[FileTypeMcStasT],
-) -> TList[FileTypeMcStasT]:
-    # print("tlist range",t_list.min(), t_list.max()) TODO: log range of t_list
-    t_list = loaded_data.value['t_list']
+    loaded_data: LoadedData[FileTypeMcStas],
+    logger: Optional[NMXLogger] = None,
+) -> TList[FileTypeMcStas]:
+    t_list = loaded_data['t_list']
+
+    if logger:
+        logger.info("T list range: [ %s, %s ]", t_list.min().value, t_list.max().value)
 
     return TList(t_list)
 
@@ -200,48 +192,39 @@ def get_id_list(loaded_data: LoadedData[FileTypeNMX]) -> IDList[FileTypeNMX]:
 
 
 def get_id_list_mcstas(
-    loaded_data: LoadedData[FileTypeMcStasT],
-) -> IDList[FileTypeMcStasT]:
-    # Ensure all IDs are recognized
-    # print("id min",id_list.values.min())
-    # print("id max",id_list.values.max()) TODO: log min and max of id_list
-    id_list = loaded_data.value['id_list']
+    loaded_data: LoadedData[FileTypeMcStas],
+) -> IDList[FileTypeMcStas]:
+    id_list = loaded_data['id_list']
 
     return IDList(id_list)
 
 
 def get_x_list_mcstas(
-    loaded_data: LoadedData[FileTypeMcStasT],
-) -> XList[FileTypeMcStasT]:
-    return XList(loaded_data.value['x_list'])
+    loaded_data: LoadedData[FileTypeMcStas],
+) -> XList[FileTypeMcStas]:
+    return XList(loaded_data['x_list'])
 
 
 def get_y_list_mcstas(
-    loaded_data: LoadedData[FileTypeMcStasT],
-) -> YList[FileTypeMcStasT]:
-    return YList(loaded_data.value['y_list'])
+    loaded_data: LoadedData[FileTypeMcStas],
+) -> YList[FileTypeMcStas]:
+    return YList(loaded_data['y_list'])
 
 
 def get_events(
     weights: Weights[FileType], t_list: TList[FileType], id_list: IDList[FileType]
 ) -> Events[FileType]:
     """get event list depending on dataformart and return dataset"""
-    return Events(
-        sc.DataArray(
-            data=weights.value, coords={'t': t_list.value, 'id': id_list.value}
-        )
-    )
+    return Events(sc.DataArray(data=weights, coords={'t': t_list, 'id': id_list}))
 
 
 providers = [
     get_file_type_nmx,
     get_file_type_mcstas,
-    get_file_type_mcstas_l,
     read_h5file,
     read_h5file_mcstas,
     get_data_path,
     get_data_path_mcstas,
-    get_l_data_path_mcstas,
     get_weights_mcstas,
     get_id_list_mcstas,
     get_x_list_mcstas,
