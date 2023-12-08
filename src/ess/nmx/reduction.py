@@ -11,9 +11,6 @@ from .loader import Events, FileType, FileTypeMcStas, FileTypeNMX
 
 TimeBinStep = NewType("TimeBinStep", int)
 DefaultTimeBinStep = TimeBinStep(1)
-Distance = NewType("Distance", sc.Variable)
-Vector3D = NewType("Vector3D", sc.Variable)
-RotationMatirx = NewType("RotationMatirx", sc.Variable)
 
 
 @dataclass
@@ -41,42 +38,6 @@ class TimeBinned(sl.Scope[FileType, sc.DataArray], sc.DataArray):
     """Time binned events"""
 
     ...
-
-
-def calculate_distance(point_a: Vector3D, point_b: Vector3D) -> Distance:
-    """
-    Calculate the distance between two points.
-    """
-    diff = point_b - point_a
-    return Distance(sc.sqrt(sc.dot(diff, diff)))
-
-
-RotationAngle = NewType("RotationAngle", sc.Variable)
-
-
-def rotation_matrix(axis: Vector3D, theta: RotationAngle) -> RotationMatirx:
-    """
-    Return the rotation matrix associated with counter-clockwise rotation about
-    the given axis by theta radians.
-
-    # TODO: Add reference.
-    """
-
-    a = sc.cos(theta / 2.0)
-    b, c, d = -(axis / sc.dot(axis, axis)) * sc.sin(theta / 2.0)
-    aa, bb, cc, dd = a * a, b * b, c * c, d * d
-    bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
-
-    return RotationMatirx(
-        sc.vectors(
-            dims=['row', 'col'],
-            values=[
-                sc.vector([aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)]),
-                sc.vector([2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)]),
-                sc.vector([2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]),
-            ],
-        )
-    )
 
 
 def get_intervals() -> PixelIDIntervals[FileTypeNMX]:
