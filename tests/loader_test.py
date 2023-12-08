@@ -70,8 +70,8 @@ def small_sample_dg() -> sc.DataGroup:
 
 
 def test_mcstas_compute_weights(small_sample_dg: sc.DataGroup) -> None:
-    from ess.nmx.loader import MaximumPropability, get_weights_mcstas
+    from ess.nmx.loader import MaximumProbability, get_weights_mcstas
 
-    prop = MaximumPropability(1_000)
+    prop = MaximumProbability(1_000)
     expected = (prop / small_sample_dg['weights'].max()) * small_sample_dg['weights']
     assert sc.identical(get_weights_mcstas(small_sample_dg, prop), expected)
