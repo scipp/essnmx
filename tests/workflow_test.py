@@ -7,10 +7,19 @@ import scipp as sc
 
 @pytest.fixture
 def mcstas_workflow() -> sl.Pipeline:
-    from ess.nmx import build_workflow
     from ess.nmx.data import small_mcstas_sample
+    from ess.nmx.loader import InputFileName
+    from ess.nmx.reduction import TimeBinStep
+    from ess.nmx.workflow import collect_default_parameters, providers
 
-    return build_workflow(small_mcstas_sample())
+    return sl.Pipeline(
+        list(providers),
+        params={
+            **collect_default_parameters(),
+            InputFileName: small_mcstas_sample(),
+            TimeBinStep: TimeBinStep(1),
+        },
+    )
 
 
 def test_pipeline_builder(mcstas_workflow: sl.Pipeline) -> None:
