@@ -32,11 +32,11 @@ def test_pipeline_mcstas_loader(mcstas_workflow: sl.Pipeline) -> None:
 def test_pipeline_mcstas_binning(mcstas_workflow: sl.Pipeline) -> None:
     """Test if the data reduction graph is complete."""
     from ess.nmx.loader import FileTypeMcStas
-    from ess.nmx.reduction import Grouped, TimeBinned
+    from ess.nmx.reduction import GroupedByPixelID, TimeBinned
 
     results = mcstas_workflow.get(
-        (Grouped[FileTypeMcStas], TimeBinned[FileTypeMcStas])
+        (GroupedByPixelID[FileTypeMcStas], TimeBinned[FileTypeMcStas])
     ).compute()
 
-    assert isinstance(results[Grouped[FileTypeMcStas]], sc.DataArray)
+    assert isinstance(results[GroupedByPixelID[FileTypeMcStas]], sc.DataArray)
     assert isinstance(results[TimeBinned[FileTypeMcStas]], sc.DataArray)

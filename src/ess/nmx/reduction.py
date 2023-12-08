@@ -31,7 +31,7 @@ class PixelIDs(sl.Scope[FileType, sc.Variable], sc.Variable):
     ...
 
 
-class Grouped(sl.Scope[FileType, sc.DataArray], sc.DataArray):
+class GroupedByPixelID(sl.Scope[FileType, sc.DataArray], sc.DataArray):
     """Grouped events"""
 
     ...
@@ -109,13 +109,15 @@ def get_ids(pixel_id_intervals: PixelIDIntervals[FileType]) -> PixelIDs[FileType
     return PixelIDs[FileType](sc.concat(ids, 'id'))
 
 
-def get_grouped(da: Events[FileType], ids: PixelIDs[FileType]) -> Grouped[FileType]:
+def get_grouped_by_pixel_id(
+    da: Events[FileType], ids: PixelIDs[FileType]
+) -> GroupedByPixelID[FileType]:
     """group events by pixel ID"""
-    return Grouped[FileType](da.group(ids))
+    return GroupedByPixelID[FileType](da.group(ids))
 
 
 def get_time_binned(
-    da: Grouped[FileType], time_bin_step: TimeBinStep
+    da: GroupedByPixelID[FileType], time_bin_step: TimeBinStep
 ) -> TimeBinned[FileType]:
     """histogram events by time"""
     return TimeBinned[FileType](da.hist(t=time_bin_step))
@@ -125,7 +127,7 @@ providers = (
     get_intervals_mcstas,
     get_intervals,
     get_ids,
-    get_grouped,
+    get_grouped_by_pixel_id,
     get_time_binned,
 )
 
