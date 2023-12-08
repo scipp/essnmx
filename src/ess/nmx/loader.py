@@ -218,7 +218,7 @@ def get_events(
     return Events(sc.DataArray(data=weights, coords={'t': t_list, 'id': id_list}))
 
 
-providers = [
+providers = (
     get_file_type_nmx,
     get_file_type_mcstas,
     read_h5file,
@@ -232,4 +232,4 @@ providers = [
     get_t_list,
     get_t_list_mcstas,
     get_events,
-]
+)

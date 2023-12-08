@@ -121,12 +121,12 @@ def get_time_binned(
     return TimeBinned[FileType](da.hist(t=time_bin_step))
 
 
-providers = [
+providers = (
     get_intervals_mcstas,
     get_intervals,
     get_ids,
     get_grouped,
     get_time_binned,
-]
+)
 
 default_params = {TimeBinStep: DefaultTimeBinStep}

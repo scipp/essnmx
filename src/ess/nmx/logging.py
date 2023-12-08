@@ -13,4 +13,4 @@ def get_logger() -> NMXLogger:
     return NMXLogger(get_logger())
 
 
-logging_providers = [get_logger]
+logging_providers = (get_logger,)

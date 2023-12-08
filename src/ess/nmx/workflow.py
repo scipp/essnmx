@@ -16,9 +16,7 @@ NMXWorkflow = NewType("NMXWorkflow", sl.Pipeline)
 NMXProviders = NewType("NMXProviders", list)
 NMXParams = NewType("NMXParams", dict)
 
-
-def collect_providers() -> NMXProviders:
-    return NMXProviders([*logging_providers, *loader_providers, *reduction_providers])
+providers = (*logging_providers, *loader_providers, *reduction_providers)
 
 
 def collect_default_parameters() -> NMXParams:
@@ -44,4 +42,4 @@ def build_workflow(
     if time_bin_step is not None:
         combined_params[TimeBinStep] = time_bin_step
 
-    return NMXWorkflow(sl.Pipeline(collect_providers(), params=combined_params))
+    return NMXWorkflow(sl.Pipeline(list(providers), params=combined_params))
