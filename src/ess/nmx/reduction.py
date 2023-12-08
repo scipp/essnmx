@@ -10,7 +10,6 @@ import scipp as sc
 from .loader import Events, FileType, FileTypeMcStas, FileTypeNMX
 
 TimeBinStep = NewType("TimeBinStep", int)
-DefaultTimeBinStep = TimeBinStep(1)
 
 
 @dataclass
@@ -91,5 +90,3 @@ providers = (
     get_grouped_by_pixel_id,
     get_time_binned,
 )
-
-default_params = {TimeBinStep: DefaultTimeBinStep}

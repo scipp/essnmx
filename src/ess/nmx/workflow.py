@@ -9,7 +9,6 @@ from .loader import DefaultMaximumPropability, InputFileName, MaximumPropability
 from .loader import providers as loader_providers
 from .logging import logging_providers
 from .reduction import TimeBinStep
-from .reduction import default_params as reduction_default_params
 from .reduction import providers as reduction_providers
 
 NMXWorkflow = NewType("NMXWorkflow", sl.Pipeline)
@@ -23,7 +22,6 @@ def collect_default_parameters() -> NMXParams:
     return NMXParams(
         {
             **detector_default_params,
-            **reduction_default_params,
             **{MaximumPropability: DefaultMaximumPropability},
         }
     )
