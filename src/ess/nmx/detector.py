@@ -6,7 +6,7 @@ from typing import NewType
 MaxNumberOfPixelsPerAxis = NewType("MaxNumberOfPixelsPerAxis", int)
 PixelStep = NewType("PixelStep", int)
 NumberOfDetectors = NewType("NumberOfDetectors", int)
-NumberOfAxis = NewType("NumberOfAxis", int)
+NumberOfAxes = NewType("NumberOfAxes", int)
 
 
 @dataclass

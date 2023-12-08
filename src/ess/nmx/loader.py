@@ -16,8 +16,8 @@ FileTypeNMX = NewType("FileTypeNMX", str)
 FileTypeMcStas = NewType("FileTypeMcStas", str)
 
 # McStas Configurations
-MaximumPropability = NewType("MaximumPropability", int)
-DefaultMaximumPropability = MaximumPropability(100000)
+MaximumProbability = NewType("MaximumProbability", int)
+DefaultMaximumProbability = MaximumProbability(100000)
 
 
 class McStasEventDataSchema(str):
