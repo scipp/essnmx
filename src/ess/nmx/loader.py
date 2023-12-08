@@ -163,7 +163,7 @@ def get_weights(t_list: TList[FileTypeNMX]) -> Weights[FileTypeNMX]:
 
 
 def get_weights_mcstas(
-    loaded_data: LoadedData[FileTypeMcStas], max_prop: MaximumPropability
+    loaded_data: LoadedData[FileTypeMcStas], max_prop: MaximumProbability
 ) -> Weights[FileTypeMcStas]:
     """Get weights of McStas data."""
     weights: Weights = loaded_data['weights']

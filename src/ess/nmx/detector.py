@@ -14,7 +14,7 @@ class InstrumentInfo:
     number_of_pixels: MaxNumberOfPixelsPerAxis
     pixel_step: PixelStep
     number_of_detectors: NumberOfDetectors
-    number_of_axis: NumberOfAxis
+    number_of_axis: NumberOfAxes
 
     @property
     def output_data_points(self):
@@ -23,7 +23,7 @@ class InstrumentInfo:
 
 default_params = {
     MaxNumberOfPixelsPerAxis: MaxNumberOfPixelsPerAxis(1280),
-    NumberOfAxis: NumberOfAxis(2),
+    NumberOfAxes: NumberOfAxes(2),
     PixelStep: PixelStep(1),
     NumberOfDetectors: NumberOfDetectors(3),
 }
