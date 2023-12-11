@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 from dataclasses import dataclass
-from typing import NewType
+from typing import NewType, TypeVar
 
 MaxNumberOfPixelsPerAxis = NewType("MaxNumberOfPixelsPerAxis", int)
 PixelStep = NewType("PixelStep", int)
 NumberOfDetectors = NewType("NumberOfDetectors", int)
 NumberOfAxes = NewType("NumberOfAxes", int)
+Detector = TypeVar("Detector")
+DetectorID = NewType("DetectorID", int)
 
 
 @dataclass

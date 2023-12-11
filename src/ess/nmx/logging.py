@@ -11,6 +11,3 @@ def get_logger() -> NMXLogger:
     from scipp.logging import get_logger
 
     return NMXLogger(get_logger())
-
-
-logging_providers = (get_logger,)
