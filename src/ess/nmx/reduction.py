@@ -27,30 +27,10 @@ TimeBinned = NewType("TimeBinned", sc.DataArray)
 # all this is McStas specific, move to mcstas loader module
 
 
-def get_intervals_mcstas() -> PixelIDIntervals:
-    """Pixel IDs intervals for each detector"""
-
-    return PixelIDIntervals(  # Check McStas pixel number conuting
-        (1, 1638401), (2000001, 3638401), (4000001, 5638401)
-    )
-
-
-def get_ids(pixel_id_intervals: Optional[PixelIDIntervals] = None) -> PixelIDs:
+def get_ids() -> PixelIDs:
     """pixel IDs for each detector"""
-    if pixel_id_intervals is None:
-        # TODO check with Justin why panels have different pixel counts,
-        # should be the same?
-        intervals = [(1, 1638401), (1638401, 3276802), (3276802, 4915203)]
-    else:
-        intervals = [
-            pixel_id_intervals.interval_1,
-            pixel_id_intervals.interval_2,
-            pixel_id_intervals.interval_3,
-        ]
-
+    intervals = [(1, 1638401), (2000001, 3638401), (4000001, 5638401)]
     ids = [sc.arange('pixel', start, stop) for start, stop in intervals]
-    # TODO We'd like panel as extra dim, but works only if all panels have same
-    # number of pixels.
     return PixelIDs(sc.concat(ids, 'panel'))
 
 
