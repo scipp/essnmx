@@ -30,13 +30,13 @@ TimeBinned = NewType("TimeBinned", sc.DataArray)
 def get_ids() -> PixelIDs:
     """pixel IDs for each detector"""
     intervals = [(1, 1638401), (2000001, 3638401), (4000001, 5638401)]
-    ids = [sc.arange('pixel', start, stop) for start, stop in intervals]
-    return PixelIDs(sc.concat(ids, 'panel'))
+    ids = [sc.arange('id', start, stop) for start, stop in intervals]
+    return PixelIDs(sc.concat(ids, 'id'))
 
 
 def get_grouped_by_pixel_id(da: Events, ids: PixelIDs) -> GroupedByPixelID:
     """group events by pixel ID"""
-    return GroupedByPixelID(da.group(ids))
+    return GroupedByPixelID(da.group(ids).fold(dim='id', sizes={'panel': 3, 'id': -1}))
 
 
 def get_time_binned(da: GroupedByPixelID, time_bin_step: TimeBinStep) -> TimeBinned:
