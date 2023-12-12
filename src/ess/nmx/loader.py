@@ -77,6 +77,7 @@ def read_file(
 ) -> Events:
     with snx.File(file_name) as file:
         if "entry1" in file:
+            # TODO detect suffix from file
             suffix = mcstas_data_schema or DefaultMcStasEventDataSchema
             prop = max_prop or DefaultMaximumProbability
             dg = _read_mcstas_nmx_file(
@@ -90,9 +91,12 @@ def read_file(
     weights: sc.Variable = dg['weights']
     t_list: sc.Variable = dg['t_list']
     id_list: sc.Variable = dg['id_list']
+    # remove unnecessary fields, since we don't need them and may have memory problems
     x_list: sc.Variable = dg['x_list']
     y_list: sc.Variable = dg['y_list']
 
+    # Let us "forget" this requirement for now, i.e., remove logging/prints for
+    # first release, wait if we get complaints.
     if logger:
         logger.info(f"Read {len(weights)} events from {file_name}.")
         logger.info(f"t-list range: ({t_list.min().value}, {t_list.max().value}).")
