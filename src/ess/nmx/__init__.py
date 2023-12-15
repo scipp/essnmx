@@ -10,3 +10,8 @@ except importlib.metadata.PackageNotFoundError:
     __version__ = "0.0.0"
 
 del importlib
+
+SOME_STRING_TUPLES = (
+    "a",
+    'b',
+)
