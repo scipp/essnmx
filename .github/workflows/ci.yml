@@ -30,9 +30,10 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements/ci.txt
       - run: tox -e static
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: pre-commit-ci/lite-action@v1.0.1
+        if: always()
         with:
-          commit_message: Apply automatic formatting
+          msg: Apply automatic formatting
 
   tests:
     name: Tests
