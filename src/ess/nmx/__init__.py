@@ -13,5 +13,5 @@ del importlib
 
 SOME_STRING_TUPLES = (
     "a",
-    'b',
+    'b'
 )
