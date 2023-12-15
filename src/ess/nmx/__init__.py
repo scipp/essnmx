@@ -11,7 +11,4 @@ except importlib.metadata.PackageNotFoundError:
 
 del importlib
 
-SOME_STRING_TUPLES = (
-    "a",
-    'b'
-)
+SOME_STRING_TUPLES = ("a", 'b')
