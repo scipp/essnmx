@@ -12,11 +12,17 @@ except importlib.metadata.PackageNotFoundError:
 del importlib
 
 from .data import small_mcstas_sample
-from .mcstas_loader import InputFilepath, NMXData, load_mcstas_nexus
+from .mcstas_loader import (
+    InputFilepath,
+    NMXData,
+    load_mcstas_geometry,
+    load_mcstas_nexus,
+)
 
 __all__ = [
     "small_mcstas_sample",
     "NMXData",
     "InputFilepath",
     "load_mcstas_nexus",
+    "load_mcstas_geometry",
 ]
