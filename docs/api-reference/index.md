@@ -25,7 +25,7 @@
    :recursive:
 
    small_mcstas_sample
-   load_mcstas_nexus
+   load_mcstas2_nexus
 
 ```
 

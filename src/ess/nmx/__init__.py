@@ -12,14 +12,14 @@ except importlib.metadata.PackageNotFoundError:
 del importlib
 
 from .data import small_mcstas_sample
-from .mcstas_loader import InputFilepath, NMXData, load_mcstas_nexus
+from .mcstas_loader import InputFilepath, NMXData, load_mcstas2_nexus
 from .reduction import NMXReducedData, TimeBinSteps
 
 __all__ = [
     "small_mcstas_sample",
     "NMXData",
     "InputFilepath",
-    "load_mcstas_nexus",
+    "load_mcstas2_nexus",
     "NMXReducedData",
     "TimeBinSteps",
 ]

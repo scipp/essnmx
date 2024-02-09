@@ -33,7 +33,7 @@ def test_file_reader_mcstas() -> None:
         DefaultMaximumProbability,
         InputFilepath,
         event_weights_from_probability,
-        load_mcstas_nexus,
+        load_mcstas2_nexus,
         proton_charge_from_event_data,
     )
 
@@ -43,7 +43,7 @@ def test_file_reader_mcstas() -> None:
         raw_data = file[entry_path]["events"][()]
         data_length = raw_data.sizes['dim_0']
 
-    dg = load_mcstas_nexus(
+    dg = load_mcstas2_nexus(
         file_path=file_path,
         event_weights_converter=event_weights_from_probability,
         proton_charge_converter=proton_charge_from_event_data,
@@ -92,7 +92,7 @@ def test_file_reader_mcstas_additional_fields(tmp_mcstas_file: pathlib.Path) -> 
     from ess.nmx.mcstas_loader import (
         InputFilepath,
         event_weights_from_probability,
-        load_mcstas_nexus,
+        load_mcstas2_nexus,
         proton_charge_from_event_data,
     )
 
@@ -104,7 +104,7 @@ def test_file_reader_mcstas_additional_fields(tmp_mcstas_file: pathlib.Path) -> 
         del file[entry_path]
         file[new_entry_path] = dataset
 
-    dg = load_mcstas_nexus(
+    dg = load_mcstas2_nexus(
         file_path=InputFilepath(str(tmp_mcstas_file)),
         event_weights_converter=event_weights_from_probability,
         proton_charge_converter=proton_charge_from_event_data,

@@ -147,13 +147,13 @@ def proton_charge_from_event_data(event_da: sc.DataArray) -> ProtonCharge:
     return ProtonCharge(_proton_charge_scale_factor * event_da.bins.size().sum().data)
 
 
-def load_mcstas_nexus(
+def load_mcstas2_nexus(
     file_path: InputFilepath,
     event_weights_converter: McStasEventWeightsConverter,
     proton_charge_converter: McStasProtonChargeConverter,
     max_probability: Optional[MaximumProbability] = None,
 ) -> NMXData:
-    """Load McStas simulation result from h5(nexus) file.
+    """Load McStas V2 simulation result from h5(nexus) file.
 
     See :func:`~event_weights_from_probability` and
     :func:`~proton_charge_from_weights` for details.
