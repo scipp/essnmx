@@ -38,6 +38,8 @@ dependencies = [
   "scippnexus>=23.9.0",
   "pooch",
   "defusedxml",
+  "pandas",
+  "gemmi",
 ]
 
 dynamic = ["version"]
