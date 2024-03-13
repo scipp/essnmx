@@ -1,14 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
-"""
-Should be able to set ``SpaceGroup``,
-``Name of the Intensity(I) or Sigma of Intensity(SIGI) or LAMBDA Column``,
-``hkl`` should be unviversal... but not sure...
-These should "usually" have same names.
-It's because the previous step might use different software.
-(Users should be able to choose which software to use.)
-
-"""
 from typing import NewType, Optional
 
 import gemmi
@@ -18,22 +9,32 @@ import sciline as sl
 
 from .mtz_io import FileName, RawMtz
 
+# User defined or configurable types
+LambdaBinSize = NewType("LambdaBinSize", int)
 SpaceGroupDesc = NewType("SpaceGroupDesc", str)
 DEFAULT_SPACE_GROUP_DESC = SpaceGroupDesc("P 21 21 21")
-SpaceGroup = NewType("SpaceGroup", gemmi.SpaceGroup)
-
+"""The default space group description to use if not found in the mtz files."""
+# Column names may vary from file to file
+# depending on the software used to generate the mtz file.
 IntensityColumnName = NewType("IntensityColumnName", str)
+"""The name of the intensity column in the mtz file."""
+DEFAULT_INTENSITY_COLUMN_NAME = IntensityColumnName("I")
 SigmaIntensityColumnName = NewType("SigmaIntensityColumnName", str)
-
-LambdaColumnName = NewType("LambdaColumnName", str)
-DEFUAULT_LAMBDA_COLUMN = LambdaColumnName("LAMBDA")
-LambdaBinSize = NewType("LambdaBinSize", int)
-
+"""The name of the standard uncertainty (of the intensity) column in the mtz file."""
+DEFAULT_SIGMA_INTENSITY_COLUMN_NAME = SigmaIntensityColumnName("SIGI")
+WavelengthColumnName = NewType("WavelengthColumnName", str)
+"""The name of the wavelength column in the mtz file."""
+DEFUAULT_WAVELENGTH_COLUMN_NAME = WavelengthColumnName("LAMBDA")
 HKLColumnName = NewType("HKLColumnName", str)
-RapioAsu = NewType("RapioAsu", gemmi.ReciprocalAsu)
+"""The name of the miller indices (HKL) column in the mtz file."""
+DEFAULT_HKL_COLUMN_NAME = HKLColumnName("hkl")
 
+# Retrieved or Calculated types
+SpaceGroup = NewType("SpaceGroup", gemmi.SpaceGroup)
+RapioAsu = NewType("RapioAsu", gemmi.ReciprocalAsu)
 NMXMtzDataFrame = NewType("NMXMtzDataFrame", pd.DataFrame)
 MergedMtzDataFrame = NewType("MergedMtzDataFrame", pd.DataFrame)
+LAMBDABinned = NewType("LAMBDABinned", pd.DataFrame)
 
 
 def reduce_mtz(mtz: RawMtz) -> NMXMtzDataFrame:
@@ -144,13 +145,12 @@ def get_reciprocal_asu(spacegroup: SpaceGroup) -> RapioAsu:
     return RapioAsu(gemmi.ReciprocalAsu(spacegroup))
 
 
-LAMBDABinned = NewType("LAMBDABinned", pd.DataFrame)
-
-
 def get_lambda_bin(
     mtz_df: MergedMtzDataFrame,
     lambda_bin_size: LambdaBinSize,
-    lambda_column_name: Optional[LambdaColumnName] = DEFUAULT_LAMBDA_COLUMN,
+    lambda_column_name: Optional[
+        WavelengthColumnName
+    ] = DEFUAULT_WAVELENGTH_COLUMN_NAME,
 ) -> LAMBDABinned:
     """Bin the whole dataset by lambda(wavelength).
 
