@@ -23,6 +23,8 @@ ScaleFactorIntensity = NewType("ScaleFactorIntensity", float)
 """The scale factor for intensity."""
 ScaleFactorSigmaIntensity = NewType("ScaleFactorSigmaIntensity", float)
 """The scale factor for the standard uncertainty of intensity."""
+HKLEQFiltered = NewType("HKLEQFiltered", sc.DataArray)
+"""Filtered data by HKL_EQ of the reference."""
 WavelengthScaled = NewType("WavelengthScaled", sc.DataArray)
 """Scaled wavelength by the reference bin."""
 
@@ -91,6 +93,12 @@ def calculate_scale_factor_per_hkl_eq(
         )
 
     return ReferenceScaleFactor(grouped)
+
+
+def filter_hkl_eq(
+    binned: WavelengthBinned, ref_scale_factor: ReferenceScaleFactor
+) -> WavelengthBinned:
+    ...
 
 
 # Providers and default parameters

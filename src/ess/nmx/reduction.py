@@ -284,12 +284,12 @@ def _apply_elem_wise(
 
 
 def _detour_group(
-    da: sc.DataArray, group_name: str, detour_func: Callable
+    da: sc.DataArray, group_var: str | sc.Variable, detour_func: Callable
 ) -> sc.DataArray:
     """Group the data array by a hash of a coordinate.
 
-    It uses index of each unique hash value
-    for grouping instead of hash value itself
+    It uses index of each unique detouring value
+    for grouping instead of detouring value itself
     to avoid overflow issues.
 
     """
@@ -297,29 +297,43 @@ def _detour_group(
 
     copied = da.copy(deep=False)
 
+    if isinstance(group_var, str):
+        group_name = group_var
+    else:
+        group_name = group_var.dim  # group can only be 1-D variable.
+
     # Temporary coords for grouping
-    detour_idx_coord_name = uuid4().hex + "hash_idx"
+    detour_idx_coord_name = uuid4().hex + "idx"
 
     # Create a temporary detoured coordinate
-    detour_var = _apply_elem_wise(detour_func, da.coords[group_name])
-    # Create a temporary hash-index of each unique value
-    unique_hashes = np.unique(detour_var.values)
-    hash_to_idx = {hash_val: idx for idx, hash_val in enumerate(unique_hashes)}
+    detour_var = _apply_elem_wise(detour_func, copied.coords[group_name])
+    # Create a temporary detour-index of each unique value
+    unique_keys = np.unique(detour_var.values)
+    key_to_idx = {hash_val: idx for idx, hash_val in enumerate(unique_keys)}
     copied.coords[detour_idx_coord_name] = _apply_elem_wise(
-        lambda idx: hash_to_idx[idx], detour_var
+        lambda idx: key_to_idx[idx], detour_var
     )
 
-    # Group by the hash-index
-    grouped = copied.group(detour_idx_coord_name)
+    # Group by the index
+    if isinstance(group_var, str):
+        grouped = copied.group(detour_idx_coord_name)
+    else:
+        group_detour = _apply_elem_wise(detour_func, group_var)
+        grouping_idx = _apply_elem_wise(lambda idx: key_to_idx[idx], group_detour)
+        grouped = copied.group(
+            grouping_idx.rename_dims({grouping_idx.dim: detour_idx_coord_name})
+        )
 
     # Restore the original values
-    idx_to_detour = {idx: hash_val for hash_val, idx in hash_to_idx.items()}
+    idx_to_detour = {idx: detour_val for detour_val, idx in key_to_idx.items()}
     detour_to_var = {
-        hash_val: var
-        for var, hash_val in zip(da.coords[group_name].values, detour_var.values)
+        detour_val: original_val
+        for original_val, detour_val in zip(
+            copied.coords[group_name].values, detour_var.values
+        )
     }
     idx_to_var = {
-        idx: detour_to_var[hash_val] for idx, hash_val in idx_to_detour.items()
+        idx: detour_to_var[detour_val] for idx, detour_val in idx_to_detour.items()
     }
     grouped.coords[group_name] = _apply_elem_wise(
         lambda idx: idx_to_var[idx],
@@ -332,7 +346,9 @@ def _detour_group(
     )
 
 
-def _group(da: sc.DataArray, /, *args: str, **group_detour_func_map) -> sc.DataArray:
+def _group(
+    da: sc.DataArray, /, *args: str | sc.Variable, **group_detour_func_map
+) -> sc.DataArray:
     """Group the data array by the given coordinates.
 
     Parameters
@@ -351,17 +367,18 @@ def _group(da: sc.DataArray, /, *args: str, **group_detour_func_map) -> sc.DataA
 
     """
     grouped = da
-    for group_name in args:
+    for group_var in args:
+        group_name = group_var if isinstance(group_var, str) else group_var.dim
         if group_name in group_detour_func_map:
             grouped = _detour_group(
-                grouped, group_name, group_detour_func_map[group_name]
+                grouped, group_var, group_detour_func_map[group_name]
             )
         else:
             try:
-                grouped = sc.group(grouped, group_name)
-            except Exception:
+                grouped = sc.group(grouped, group_var)
+            except TypeError:
                 grouped = _detour_group(
-                    grouped, group_name, group_detour_func_map.get(group_name, hash)
+                    grouped, group_var, group_detour_func_map.get(group_name, hash)
                 )
 
     return grouped
