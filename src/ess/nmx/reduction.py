@@ -299,16 +299,26 @@ def _detour_group(
 
     if isinstance(group_var, str):
         group_name = group_var
+        all_original_vars = copied.coords[group_name]
     else:
         group_name = group_var.dim  # group can only be 1-D variable.
+        all_original_vars = sc.concat(
+            [
+                copied.coords[group_name],
+                group_var.rename_dims({group_var.dim: copied.coords[group_name].dim}),
+            ],
+            dim=copied.coords[group_name].dim,
+        )
 
     # Temporary coords for grouping
     detour_idx_coord_name = uuid4().hex + "idx"
 
     # Create a temporary detoured coordinate
     detour_var = _apply_elem_wise(detour_func, copied.coords[group_name])
+
     # Create a temporary detour-index of each unique value
-    unique_keys = np.unique(detour_var.values)
+    all_detour_vars = _apply_elem_wise(detour_func, all_original_vars)
+    unique_keys = np.unique(all_detour_vars.values)
     key_to_idx = {hash_val: idx for idx, hash_val in enumerate(unique_keys)}
     copied.coords[detour_idx_coord_name] = _apply_elem_wise(
         lambda idx: key_to_idx[idx], detour_var
@@ -329,7 +339,7 @@ def _detour_group(
     detour_to_var = {
         detour_val: original_val
         for original_val, detour_val in zip(
-            copied.coords[group_name].values, detour_var.values
+            all_original_vars.values, all_detour_vars.values
         )
     }
     idx_to_var = {

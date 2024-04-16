@@ -102,3 +102,22 @@ def test_detour_group_vector_by_variable_drop_group() -> None:
         sc.vectors(dims=["x"], values=[(1, 2, 3)]),
     )
     assert grouped.bins.size().sum().value == 5
+
+
+def test_detour_group_vector_by_variable_extra_group() -> None:
+    da = sc.DataArray(
+        data=sc.ones(dims=["x"], shape=[15]),
+        coords={
+            "x": sc.vectors(dims=["x"], values=[(1, 2, 3), (4, 5, 6), (7, 8, 9)] * 5)
+        },
+    )
+
+    grouped = _group(
+        da, sc.vectors(dims=["x"], values=[(1, 2, 3), (10, 11, 12)]), x=str
+    )
+    assert sc.identical(
+        grouped.coords["x"],
+        sc.vectors(dims=["x"], values=[(1, 2, 3), (10, 11, 12)]),
+    )
+    assert grouped.bins.size().sum().value == 5
+    assert grouped[1].values.size == 0  # (10, 11, 12) group should be empty
