@@ -32,7 +32,7 @@ def test_apply_elem_wise_vectors() -> None:
     )
 
 
-def test_detour_group_str() -> None:
+def test_detour_group_str_by_name() -> None:
     from ess.nmx.scaling import _group
 
     da = sc.DataArray(
@@ -47,7 +47,22 @@ def test_detour_group_str() -> None:
     )
 
 
-def test_detour_group_vector() -> None:
+def test_detour_group_str_by_variable() -> None:
+    from ess.nmx.scaling import _group
+
+    da = sc.DataArray(
+        data=sc.ones(dims=["x"], shape=[3]),
+        coords={"x": sc.Variable(dims=["x"], values=["a", "b", "a"])},
+    )
+
+    grouped = _group(da, sc.array(dims=["x"], values=["a", "b"]), x=lambda x: x)
+    assert sc.identical(
+        grouped.coords["x"],
+        sc.Variable(dims=["x"], values=["a", "b"]),
+    )
+
+
+def test_detour_group_vector_by_name() -> None:
     da = sc.DataArray(
         data=sc.ones(dims=["x"], shape=[10]),
         coords={"x": sc.vectors(dims=["x"], values=[(1, 2, 3), (4, 5, 6)] * 5)},
@@ -58,3 +73,32 @@ def test_detour_group_vector() -> None:
         grouped.coords["x"],
         sc.vectors(dims=["x"], values=[(1, 2, 3), (4, 5, 6)]),
     )
+
+
+def test_detour_group_vector_by_variable() -> None:
+    da = sc.DataArray(
+        data=sc.ones(dims=["x"], shape=[10]),
+        coords={"x": sc.vectors(dims=["x"], values=[(1, 2, 3), (4, 5, 6)] * 5)},
+    )
+
+    grouped = _group(da, sc.vectors(dims=["x"], values=[(1, 2, 3), (4, 5, 6)]), x=str)
+    assert sc.identical(
+        grouped.coords["x"],
+        sc.vectors(dims=["x"], values=[(1, 2, 3), (4, 5, 6)]),
+    )
+
+
+def test_detour_group_vector_by_variable_drop_group() -> None:
+    da = sc.DataArray(
+        data=sc.ones(dims=["x"], shape=[15]),
+        coords={
+            "x": sc.vectors(dims=["x"], values=[(1, 2, 3), (4, 5, 6), (7, 8, 9)] * 5)
+        },
+    )
+
+    grouped = _group(da, sc.vectors(dims=["x"], values=[(1, 2, 3)]), x=str)
+    assert sc.identical(
+        grouped.coords["x"],
+        sc.vectors(dims=["x"], values=[(1, 2, 3)]),
+    )
+    assert grouped.bins.size().sum().value == 5
