@@ -3,8 +3,7 @@
 import doctest
 import os
 import sys
-
-from ess import nmx
+from importlib.metadata import version as get_version
 
 sys.path.insert(0, os.path.abspath('.'))
 
@@ -30,12 +29,14 @@ extensions = [
     'nbsphinx',
     'myst_parser',
 ]
+
 try:
     import sciline.sphinxext.domain_types  # noqa: F401
 
     extensions.append('sciline.sphinxext.domain_types')
 except ModuleNotFoundError:
     pass
+
 
 myst_enable_extensions = [
     "amsmath",
@@ -81,6 +82,7 @@ napoleon_type_aliases = {
 typehints_defaults = 'comma'
 typehints_use_rtype = False
 
+
 sciline_domain_types_prefix = 'ess.nmx'
 sciline_domain_types_aliases = {
     'scipp._scipp.core.DataArray': 'scipp.DataArray',
@@ -90,6 +92,7 @@ sciline_domain_types_aliases = {
     'scipp._scipp.core.Variable': 'scipp.Variable',
     'scipp.core.data_group.DataGroup': 'scipp.DataGroup',
 }
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -108,10 +111,8 @@ master_doc = 'index'
 # built documents.
 #
 
-# The short X.Y version.
-version = nmx.__version__
-# The full version, including alpha/beta/rc tags.
-release = nmx.__version__
+release = get_version("essnmx")
+version = ".".join(release.split('.')[:3])  # CalVer
 
 warning_is_error = True
 
