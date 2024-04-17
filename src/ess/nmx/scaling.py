@@ -10,7 +10,7 @@ from .reduction import _join_variables, _split_variable
 # User defined or configurable types
 WavelengthBinSize = NewType("WavelengthBinSize", int)
 """The size of the wavelength(LAMBDA) bins."""
-CuttingWavelengthEdgeProportion = NewType("CuttingWavelengthEdgeProportion", float)
+WavelengthEdgeCut = NewType("WavelengthEdgeCut", float)
 """The proportional cut of the wavelength binned data. 0 < proportion < 0.5."""
 
 
@@ -149,7 +149,7 @@ def scale_by_reference_bin(
 
 
 def cut_edges(
-    scaled: WavelengthScaled, edges: CuttingWavelengthEdgeProportion
+    scaled: WavelengthScaled, edges: WavelengthEdgeCut
 ) -> WavelengthScaledTrimmed:
     """Cut the edges of the scaled data.
 
