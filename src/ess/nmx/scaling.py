@@ -10,6 +10,8 @@ from .reduction import _join_variables, _split_variable
 # User defined or configurable types
 WavelengthBinSize = NewType("WavelengthBinSize", int)
 """The size of the wavelength(LAMBDA) bins."""
+CuttingWavelengthEdgeProportion = NewType("CuttingWavelengthEdgeProportion", float)
+"""The proportional cut of the wavelength binned data. 0 < proportion < 0.5."""
 
 
 # Computed types
@@ -25,6 +27,8 @@ ScaleFactorSigmaIntensity = NewType("ScaleFactorSigmaIntensity", float)
 """The scale factor for the standard uncertainty of intensity."""
 WavelengthScaled = NewType("WavelengthScaled", sc.DataArray)
 """Scaled wavelength by the reference bin."""
+WavelengthScaledTrimmed = NewType("WavelengthScaledTrimmed", sc.DataArray)
+"""Scaled wavelength by the reference bin with the edges cut."""
 
 
 def _is_bin_empty(binned: sc.DataArray, idx: int) -> bool:
@@ -144,11 +148,37 @@ def scale_by_reference_bin(
     return WavelengthScaled(grouped.bins.mean() * copied_scale_factor)
 
 
+def cut_edges(
+    scaled: WavelengthScaled, edges: CuttingWavelengthEdgeProportion
+) -> WavelengthScaledTrimmed:
+    """Cut the edges of the scaled data.
+
+    Parameters
+    ----------
+    scaled:
+        Scaled data to be cut.
+
+    edges:
+        The number of edges to be cut.
+
+    Returns
+    -------
+    sc.DataArray
+        The scaled data with the edges cut.
+
+    """
+    cutting_index = int(edges * len(scaled))
+    return WavelengthScaledTrimmed(
+        scaled[DEFAULT_WAVELENGTH_COLUMN_NAME, cutting_index:-cutting_index]
+    )
+
+
 # Providers and default parameters
 scaling_providers = (
     get_lambda_binned,
     get_reference_bin,
     calculate_scale_factor_per_hkl_eq,
     scale_by_reference_bin,
+    cut_edges,
 )
 """Providers for scaling data."""
