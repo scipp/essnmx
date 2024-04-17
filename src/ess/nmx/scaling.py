@@ -5,6 +5,7 @@ from typing import NewType
 import scipp as sc
 
 from .mtz_io import DEFAULT_WAVELENGTH_COLUMN_NAME, NMXMtzDataArray
+from .reduction import _join_variables, _split_variable
 
 # User defined or configurable types
 WavelengthBinSize = NewType("WavelengthBinSize", int)
@@ -89,10 +90,65 @@ def calculate_scale_factor_per_hkl_eq(
     return ReferenceScaleFactor((1 / non_empty).bins.mean())
 
 
+def scale_by_reference_bin(
+    binned: WavelengthBinned,
+    scale_factor: ReferenceScaleFactor,
+    _mtz_da: NMXMtzDataArray,
+) -> WavelengthScaled:
+    """Scale the intensity by the scale factor.
+
+    Parameters
+    ----------
+    binned:
+        Binned data by wavelength(LAMBDA) to be grouped and scaled.
+
+    scale_factor:
+        The scale factor to be used for scaling per HKL group.
+
+    _mtz_da:
+        The original mtz data array to get the HKL_EQ coordinates.
+        This argument will be removed once the issue in scipp is fixed.
+
+    Returns
+    -------
+    sc.DataArray
+        Scaled intensty by the scale factor.
+
+    """
+    # This part is a temporary solution before we fix the issue in scipp.
+    # The complicated  be replaced with the scipp group function once it's possible
+    # to group by string-type coordinates or ``tuple[int]`` type of coordinates.
+    # See https://github.com/scipp/scipp/issues/3046 for more details.
+    da = _mtz_da.copy(deep=False)
+    hkl_eq_coords = [_mtz_da.coords[f"{coord}_EQ"] for coord in "HKL"]
+    da.coords["HKL_EQ"] = _join_variables(*hkl_eq_coords)
+    binned = da.bin(
+        {DEFAULT_WAVELENGTH_COLUMN_NAME: binned.coords[DEFAULT_WAVELENGTH_COLUMN_NAME]}
+    )
+    group_coords = tuple(scale_factor.coords[f"{coord}_EQ"] for coord in "HKL")
+    group_vars = _join_variables(*group_coords)
+
+    # Grouping by HKL_EQ
+    grouped = binned.group(group_vars)
+    # Putting back the real coordinates
+    # This part should be removed once the issue in scipp is fixed
+    # mentioned in the comment above.
+    real_coords = _split_variable(grouped.coords["HKL_EQ"])
+    for i_coord, name in enumerate([f"{coord}_EQ" for coord in "HKL"]):
+        grouped.coords[name] = real_coords[i_coord]
+
+    # Drop variances of the scale factor
+    copied_scale_factor = scale_factor.copy(deep=False)
+    copied_scale_factor.variances = None
+    # Scale each group each bin by the scale factor
+    return WavelengthScaled(grouped.bins.mean() * copied_scale_factor)
+
+
 # Providers and default parameters
 scaling_providers = (
     get_lambda_binned,
     get_reference_bin,
     calculate_scale_factor_per_hkl_eq,
+    scale_by_reference_bin,
 )
 """Providers for scaling data."""
