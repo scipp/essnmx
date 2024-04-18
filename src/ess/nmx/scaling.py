@@ -26,7 +26,7 @@ ScaleFactorIntensity = NewType("ScaleFactorIntensity", float)
 """The scale factor for intensity."""
 ScaleFactorSigmaIntensity = NewType("ScaleFactorSigmaIntensity", float)
 """The scale factor for the standard uncertainty of intensity."""
-WavelengthScaled = NewType("WavelengthScaled", sc.DataArray)
+ScaledIntensity = NewType("WavelengthScaled", sc.DataArray)
 """Scaled intensity by the reference bin."""
 ScaledTrimmedIntensity = NewType("ScaledTrimmedIntensity", sc.DataArray)
 """Scaled intensity by the reference bin with the edges cut."""
@@ -105,7 +105,7 @@ def scale_by_reference_bin(
     binned: WavelengthBinned,
     scale_factor: ReferenceScaleFactor,
     _mtz_da: NMXMtzDataArray,
-) -> WavelengthScaled:
+) -> ScaledIntensity:
     """Scale the intensity by the scale factor.
 
     Parameters
@@ -146,11 +146,11 @@ def scale_by_reference_bin(
     copied_scale_factor = scale_factor.copy(deep=False)
     copied_scale_factor.variances = None
     # Scale each group each bin by the scale factor
-    return WavelengthScaled(grouped.bins.mean() * copied_scale_factor)
+    return ScaledIntensity(grouped.bins.mean() * copied_scale_factor)
 
 
 def cut_edges(
-    scaled: WavelengthScaled, edges: WavelengthEdgeCut
+    scaled: ScaledIntensity, edges: WavelengthEdgeCut
 ) -> ScaledTrimmedIntensity:
     """Cut the edges of the scaled data.
 
