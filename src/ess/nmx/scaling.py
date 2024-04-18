@@ -203,7 +203,9 @@ def cut_by_quad_root_sample_std(
     """Cut the data by the quad root of the sample standard deviation.
 
     The data is flattened since the standard deviation cut
-    is not aligned with the original coordinates.
+    and `nan` filtering may not be aligned with the
+    original coordinates, and we do not need `nan` values
+    or wavelength/HKL dimension from here.
 
     Parameters
     ----------
