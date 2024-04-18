@@ -47,7 +47,7 @@ def test_zip_and_group_variables_less_groups() -> None:
 
     var_x = sc.array(dims=["x"], values=[1, 1, 3, 3], unit=None)
     var_y = sc.array(dims=["y"], values=[0, 2, 0, 3], unit=None)
-    var_xy = sc.array(dims=["xy"], values=["1 0", "1 2", "3 0", "3 3", "4 4"])
+    var_xy = sc.array(dims=["xy"], values=["1 0", "1 2", "3 0", "3 3"])
 
     grouped = _zip_and_group(da, var_x, var_y)
     assert sc.identical(grouped.coords["xy"], var_xy)

@@ -5,7 +5,7 @@ from typing import NewType
 import scipp as sc
 
 from .mtz_io import DEFAULT_WAVELENGTH_COLUMN_NAME, NMXMtzDataArray
-from .reduction import _join_variables, _split_variable
+from .reduction import _join_variables
 
 # User defined or configurable types
 WavelengthBinSize = NewType("WavelengthBinSize", int)
@@ -141,12 +141,6 @@ def scale_by_reference_bin(
 
     # Grouping by HKL_EQ
     grouped = binned.group(group_vars)
-    # Putting back the real coordinates
-    # This part should be removed once the issue in scipp is fixed
-    # mentioned in the comment above.
-    real_coords = _split_variable(grouped.coords["HKL_EQ"])
-    for i_coord, name in enumerate([f"{coord}_EQ" for coord in "HKL"]):
-        grouped.coords[name] = real_coords[i_coord]
 
     # Drop variances of the scale factor
     copied_scale_factor = scale_factor.copy(deep=False)
