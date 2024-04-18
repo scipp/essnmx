@@ -26,7 +26,7 @@ ScaleFactorIntensity = NewType("ScaleFactorIntensity", float)
 """The scale factor for intensity."""
 ScaleFactorSigmaIntensity = NewType("ScaleFactorSigmaIntensity", float)
 """The scale factor for the standard uncertainty of intensity."""
-ScaledIntensity = NewType("WavelengthScaled", sc.DataArray)
+ScaledIntensity = NewType("ScaledIntensity", sc.DataArray)
 """Scaled intensity by the reference bin."""
 ScaledTrimmedIntensity = NewType("ScaledTrimmedIntensity", sc.DataArray)
 """Scaled intensity by the reference bin with the edges cut."""
