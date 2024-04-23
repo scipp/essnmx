@@ -253,10 +253,12 @@ def nmx_mtz_dataframe_to_scipp_dataarray(
 
     # Add variances
     nmx_mtz_da = nmx_mtz_ds[DEFAULT_INTENSITY_COLUMN_NAME].copy(deep=False)
-    nmx_mtz_da.variances = nmx_mtz_ds[DEFAULT_SIGMA_INTENSITY_COLUMN_NAME].data ** 2
+    nmx_mtz_da.variances = (
+        nmx_mtz_ds[DEFAULT_SIGMA_INTENSITY_COLUMN_NAME].data ** 2
+    ).values
 
-    # Return DataArray
-    return NMXMtzDataArray(nmx_mtz_da)
+    # Return DataArray only with positive values
+    return NMXMtzDataArray(nmx_mtz_da[nmx_mtz_da.data > 0])
 
 
 mtz_io_providers = (

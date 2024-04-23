@@ -12,7 +12,7 @@ WavelengthBinSize = NewType("WavelengthBinSize", int)
 """The size of the wavelength(LAMBDA) bins."""
 WavelengthEdgeCut = NewType("WavelengthEdgeCut", float)
 """The proportional cut of the wavelength binned data. 0 < proportion < 0.5."""
-QuadRootStadardDeviationCut = NewType("QuadRootStadardDeviationCut", int)
+QuadRootStadardDeviationCut = NewType("QuadRootStadardDeviationCut", float)
 """The number of standard deviations to be cut from the 4-th root data."""
 
 # Computed types
@@ -60,6 +60,7 @@ def get_lambda_binned(
 
 
 def get_reference_bin(binned: WavelengthBinned) -> ReferenceWavelengthBin:
+    # TODO: should be able to set the reference wavelength
     """Find the reference group in the binned dataset.
 
     The reference group is the group in the middle of the binned dataset.
@@ -89,7 +90,7 @@ def get_reference_bin(binned: WavelengthBinned) -> ReferenceWavelengthBin:
     return binned[cur_idx].values.copy(deep=False)
 
 
-def calculate_scale_factor_per_hkl_eq(
+def calculate_reference_scale_factor_per_hkl_eq(
     ref_bin: ReferenceWavelengthBin,
 ) -> ReferenceScaleFactor:
     # Workaround for https://github.com/scipp/scipp/issues/3046
@@ -97,11 +98,11 @@ def calculate_scale_factor_per_hkl_eq(
         dims=["H_EQ", "K_EQ", "L_EQ"], to="HKL_EQ"
     )
     non_empty = grouped[grouped.bins.size().data > sc.scalar(0, unit=None)]
+    scale_factors = (1 / non_empty).bins.mean()
+    return ReferenceScaleFactor(scale_factors[~sc.isinf(scale_factors.data)])
 
-    return ReferenceScaleFactor((1 / non_empty).bins.mean())
 
-
-def scale_by_reference_bin(
+def calculate_scale_factor_per_wavelength(
     binned: WavelengthBinned,
     scale_factor: ReferenceScaleFactor,
     _mtz_da: NMXMtzDataArray,
@@ -139,14 +140,16 @@ def scale_by_reference_bin(
     group_coords = tuple(scale_factor.coords[f"{coord}_EQ"] for coord in "HKL")
     group_vars = _join_variables(*group_coords)
 
-    # Grouping by HKL_EQ
+    # Group by HKL_EQ
     grouped = binned.group(group_vars)
 
     # Drop variances of the scale factor
     copied_scale_factor = scale_factor.copy(deep=False)
     copied_scale_factor.variances = None
     # Scale each group each bin by the scale factor
-    return ScaledIntensity(grouped.bins.mean() * copied_scale_factor)
+    return ScaledIntensity(
+        sc.nanmean(grouped.bins.nanmean() * copied_scale_factor, dim='HKL_EQ')
+    )
 
 
 def cut_edges(
@@ -168,7 +171,7 @@ def cut_edges(
         The scaled data with the edges cut.
 
     """
-    cutting_index = int(edges * len(scaled))
+    cutting_index = int(edges * scaled.sizes[DEFAULT_WAVELENGTH_COLUMN_NAME])
     return ScaledTrimmedIntensity(
         scaled[DEFAULT_WAVELENGTH_COLUMN_NAME, cutting_index:-cutting_index]
     )
@@ -216,26 +219,17 @@ def cut_by_quad_root_sample_std(
     copied.coords[DEFAULT_WAVELENGTH_COLUMN_NAME] = _bin_edge_to_midpoint_coord(
         copied.coords[DEFAULT_WAVELENGTH_COLUMN_NAME]
     )  # Bin edges are lost when they are flattened.
-    flattened = copied.flatten(dims=da.dims, to="row")
-    quad_root = flattened.data ** (0.25)
+    quad_root = copied.data ** (0.25)
 
     # Calculate the mean and standard deviation of the quad root
-    quad_root.variances = None
-    quad_root_mean = quad_root.nanmean()
+    quad_root_mean = sc.mean(quad_root)
     quad_root_std = _calculate_sample_standard_deviation(quad_root)
     half_window = n_cut * quad_root_std
     keep_range = (quad_root_mean - half_window, quad_root_mean + half_window)
 
     # Keep the data within the range
-    flattened.coords["keep"] = sc.logical_and(
-        quad_root >= keep_range[0], quad_root < keep_range[1]
-    )
-    keep_or_discard = flattened.group("keep")
-    if not sc.any(keep_or_discard.coords['keep']):
-        raise ValueError("No data fell into the keeping window. Try wider cut.")
-
     return FilteredIntensity(
-        keep_or_discard["keep", sc.scalar(True)].values.copy(deep=False)
+        copied[(quad_root > keep_range[0]) & (quad_root < keep_range[1])]
     )
 
 
@@ -243,8 +237,8 @@ def cut_by_quad_root_sample_std(
 scaling_providers = (
     get_lambda_binned,
     get_reference_bin,
-    calculate_scale_factor_per_hkl_eq,
-    scale_by_reference_bin,
+    calculate_reference_scale_factor_per_hkl_eq,
+    calculate_scale_factor_per_wavelength,
     cut_edges,
     cut_by_quad_root_sample_std,
 )

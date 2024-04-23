@@ -6,7 +6,7 @@ import scipp as sc
 from ess.nmx.mtz_io import DEFAULT_WAVELENGTH_COLUMN_NAME
 from ess.nmx.scaling import (
     ReferenceWavelengthBin,
-    calculate_scale_factor_per_hkl_eq,
+    calculate_reference_scale_factor_per_hkl_eq,
     get_reference_bin,
 )
 
@@ -47,7 +47,7 @@ def reference_bin(nmx_data_array: sc.DataArray) -> ReferenceWavelengthBin:
 
 def test_reference_bin_scale_factor(reference_bin: ReferenceWavelengthBin) -> None:
     """Test the scale factor for I."""
-    scale_factor = calculate_scale_factor_per_hkl_eq(reference_bin)
+    scale_factor = calculate_reference_scale_factor_per_hkl_eq(reference_bin)
     expected_groups = [(7, 8, 9), (9, 8, 7)]
 
     assert len(scale_factor) == len(expected_groups)
