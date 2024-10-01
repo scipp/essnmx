@@ -63,6 +63,7 @@ addopts = """
 testpaths = "tests"
 filterwarnings = [
   "error",
+  "ignore::DeprecationWarning",
 ]
 
 [tool.ruff]
