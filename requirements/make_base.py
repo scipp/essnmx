@@ -62,7 +62,7 @@ def as_nightly(repo: str) -> str:
             "--index-url=https://pypi.anaconda.org/scipp-nightly-wheels/simple/\n"
             "--extra-index-url=https://pypi.org/simple\n"
             "--pre"
-            )
+        )
     return f"{repo} @ git+https://github.com/{org}/{repo}@main"
 
 
