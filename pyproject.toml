@@ -69,6 +69,7 @@ addopts = """
 testpaths = "tests"
 filterwarnings = [
   "error",
+  "ignore:filter extracted tar archives:DeprecationWarning",
 ]
 
 [tool.ruff]
