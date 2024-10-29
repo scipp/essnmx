@@ -11,7 +11,7 @@ import scipp as sc
 from defusedxml.ElementTree import fromstring
 
 from ..rotation import axis_angle_to_quaternion, quaternion_to_matrix
-from ..types import FilePath
+from ..types import DetectorName, FilePath
 
 T = TypeVar('T')
 
@@ -410,3 +410,77 @@ def read_mcstas_geometry_xml(file_path: FilePath) -> McStasInstrument:
     with h5py.File(file_path) as file:
         tree = fromstring(file[instrument_xml_path][...][0])
         return McStasInstrument.from_xml(tree)
+
+
+def load_mcstas_geometry(
+    file_path: FilePath, component_name: DetectorName
+) -> McStasInstrument:
+    """Retrieve geometric information from mcstas file"""
+    import scippnexus as snx
+    from scipy.spatial.transform import Rotation
+
+    with snx.File(file_path, 'r') as f:
+        root = f[f"entry1/instrument/components/{component_name}"]
+        position_x_offset = root['output/BINS/x__m_'][()]
+        position_y_offset = root['output/BINS/y__m_'][()]
+        step_x = position_x_offset['x__m_', 1] - position_x_offset['x__m_', 0]
+        step_x.unit = 'm'
+        step_y = position_y_offset['y__m_', 1] - position_y_offset['y__m_', 0]
+        step_y.unit = 'm'
+        position = root['Position'][()]
+        origin_position_vector = sc.vector([*position.values], unit='m')
+        det_rotation = root['Rotation'][()]
+        det_rotation_matrix = sc.spatial.rotations_from_rotvecs(
+            rotation_vectors=sc.vector(
+                Rotation.from_matrix(det_rotation.values).as_rotvec(degrees=False),
+                unit='rad',
+            )
+        )  # Not sure if it is the correct way...
+        pixel_ids = root['output/BINS/pixels'][()]
+        sim_settings = SimulationSettings(
+            length_unit='m', angle_unit='degree', beam_axis='z', handedness='right'
+        )  # Hard-coded for now.
+        sample_position = f["entry1/instrument/components/sampleMantid/Position"][()]
+        sample_rotation = f["entry1/instrument/components/sampleMantid/Rotation"][()]
+        sample_rotation_matrix = sc.spatial.rotations_from_rotvecs(
+            rotation_vectors=sc.vector(
+                Rotation.from_matrix(sample_rotation.values).as_rotvec(degrees=False),
+                unit='rad',
+            )
+        )  # Not sure if it is the correct way...
+        sample_desc = SampleDesc(
+            component_type='sampleMantid',
+            name='sample',
+            position=sc.vector([*sample_position.values], unit='m'),
+            rotation_matrix=sample_rotation_matrix,
+        )
+        source_position = f["entry1/instrument/components/sourceMantid/Position"][()]
+        source_desc = SourceDesc(
+            component_type='Source',
+            name='source',
+            position=sc.vector([*source_position.values], unit='m'),
+        )
+        return McStasInstrument(
+            simulation_settings=sim_settings,
+            detectors=(
+                DetectorDesc(
+                    component_type='MonNDtype',
+                    name=component_name,
+                    id_start=pixel_ids.min().value,
+                    fast_axis_name='x',
+                    num_x=pixel_ids.shape[1],
+                    num_y=pixel_ids.shape[0],
+                    step_x=step_x,
+                    step_y=step_y,
+                    start_x=position_x_offset.min().value,
+                    start_y=position_y_offset.min().value,
+                    rotation_matrix=det_rotation_matrix,
+                    slow_axis_name='y',
+                    fast_axis=det_rotation_matrix * _AXISNAME_TO_UNIT_VECTOR['x'],
+                    slow_axis=det_rotation_matrix * _AXISNAME_TO_UNIT_VECTOR['y'],
+                    position=origin_position_vector,
+                ),
+            ),
+            source=source_desc,
+            sample=sample_desc,
+        )

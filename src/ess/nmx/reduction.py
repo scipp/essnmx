@@ -4,7 +4,7 @@ from typing import NewType
 
 import scipp as sc
 
-from .mcstas.xml import McStasInstrument
+from .mcstas.geometry import McStasInstrument
 from .types import DetectorName, TimeBinSteps
 
 NMXData = NewType("NMXData", sc.DataGroup)
