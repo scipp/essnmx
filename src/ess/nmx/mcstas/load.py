@@ -17,7 +17,7 @@ from ..types import (
     ProtonCharge,
     RawEventData,
 )
-from .xml import McStasInstrument, read_mcstas_geometry_xml
+from .geometry import McStasInstrument, read_mcstas_geometry_xml
 
 
 def detector_name_from_index(index: DetectorIndex) -> DetectorName:
@@ -174,6 +174,61 @@ def load_mcstas(
             **coords,
         )
     )
+
+
+def load_crystal_rotation_mcstas_35(file_path: FilePath) -> CrystalRotation:
+    """Retrieve crystal rotation from the file.
+
+    Raises
+    ------
+    KeyError
+        If the crystal rotation is not found in the file.
+
+    """
+    from scipy.spatial.transform import Rotation
+
+    with snx.File(file_path, 'r') as f:
+        root = f["entry1/instrument/components/sampleMantid"]
+        rotation = root['Rotation'][()]
+        rotation_matrix = sc.spatial.rotations_from_rotvecs(
+            rotation_vectors=sc.vector(
+                Rotation.from_matrix(rotation.values).as_rotvec(degrees=False),
+                unit='rad',
+            )
+        )  # Not sure if it is the correct way...
+        return CrystalRotation(rotation_matrix)
+
+
+def load_raw_event_data_mcstas_35(
+    file_path: FilePath,
+    bank_prefix: DetectorBankPrefix,
+    detector_name: DetectorName,
+) -> RawEventData:
+    """Retrieve events from the nexus file."""
+    bank_name = f'{bank_prefix}_dat_list_p_x_y_n_id_t'
+    with snx.File(file_path, 'r') as f:
+        root = f["entry1/data"]
+        pixel_ids: sc.Variable = (
+            f[f"entry1/instrument/components/{detector_name}/output/BINS/pixels"][()]
+            .astype(int)
+            .flatten(to='id')
+        )
+        (bank_name,) = (name for name in root.keys() if bank_name in name)
+        data = root[bank_name]["events"][()].rename_dims({'dim_0': 'event'})
+        return sc.DataArray(
+            coords={
+                'id': sc.array(
+                    dims=['event'],
+                    values=data['dim_1', 4].values,
+                    dtype='int64',
+                    unit=None,
+                ),
+                't': sc.array(dims=['event'], values=data['dim_1', 5].values, unit='s'),
+            },
+            data=sc.array(
+                dims=['event'], values=data['dim_1', 0].values, unit='counts'
+            ),
+        ).group(pixel_ids)
 
 
 providers = (
