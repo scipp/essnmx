@@ -158,16 +158,15 @@ def _add_lauetof_definition(nx_entry: h5py.Group) -> None:
     nx_entry["definition"].attrs["NX_class"] = "NX_CHAR"
 
 
-def _create_lauetof_instrument(nx_entry: h5py.Group) -> h5py.Group:
+def _add_lauetof_instrument(nx_entry: h5py.Group):
     nx_instrument = nx_entry.create_group("instrument")
     nx_instrument.attrs["NX_class"] = "NXinstrument"
     nx_instrument["name"] = "NMX"
     nx_instrument["name"].attrs["NX_class"] = "NX_CHAR"
-    return nx_instrument
 
 
-def _add_lauetof_detector_group(nx_instrument: h5py.Group) -> None:
-    nx_detector = nx_instrument.create_group("NXdetector")
+def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> None:
+    nx_detector = nx_instrument.create_group(dg["name"])  # Detector name
     nx_detector.attrs["NX_class"] = "NXdetector"
     # Polar angle
     _create_dataset_from_var(
@@ -265,6 +264,33 @@ def _add_lauetof_monitor_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None
     )
 
 
+def export_panel_independent_data_as_nxlauetof(
+    data: sc.DataGroup, output_file: str | pathlib.Path | io.BytesIO
+) -> None:
+    """Export panel independent data to a nxlauetof format.
+
+    It also creates parents of panel dependent datasets/groups.
+    Therefore panel dependent data should be added on the same file.
+    """
+    with h5py.File(output_file, "w") as f:
+        f.attrs["NX_class"] = "NXlauetof"
+        nx_entry = _create_lauetof_data_entry(f)
+        _add_lauetof_definition(nx_entry)
+        _add_lauetof_instrument(nx_entry)
+        _add_lauetof_sample_group(data, nx_entry)
+        _add_lauetof_monitor_group(data, nx_entry)
+        # Skipping ``name`` field
+
+
+def export_panel_dependent_data_as_nxlauetof(
+    *dgs: sc.DataGroup, output_file: str | pathlib.Path | io.BytesIO
+) -> None:
+    with h5py.File(output_file, "r+") as f:
+        nx_instrument: h5py.Group = f["entry/instrument"]
+        for dg in dgs:
+            _add_lauetof_detector_group(dg, nx_instrument)
+
+
 def export_as_nxlauetof(
     data: sc.DataGroup, output_file: str | pathlib.Path | io.BytesIO
 ) -> None:
@@ -272,12 +298,4 @@ def export_as_nxlauetof(
 
     Exporting step is not expected to be part of sciline pipelines.
     """
-    with h5py.File(output_file, "w") as f:
-        f.attrs["NX_class"] = "NXlauetof"
-        nx_entry = _create_lauetof_data_entry(f)
-        _add_lauetof_definition(nx_entry)
-        nx_instrument = _create_lauetof_instrument(nx_entry)
-        _add_lauetof_detector_group(nx_instrument)
-        _add_lauetof_sample_group(data, nx_entry)
-        _add_lauetof_monitor_group(data, nx_entry)
-        # Skipping ``name`` field
+    export_panel_independent_data_as_nxlauetof(data, output_file)
