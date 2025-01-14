@@ -129,6 +129,15 @@ def export_as_nexus(
 
     Currently exporting step is not expected to be part of sciline pipelines.
     """
+    import warnings
+
+    warnings.warn(
+        DeprecationWarning(
+            "Exporting to custom NeXus format will be deprecated in the near future."
+            "Please use ``export_as_nxlauetof`` instead."
+        ),
+        stacklevel=1,
+    )
     with h5py.File(output_file, "w") as f:
         f.attrs["default"] = "NMX_data"
         nx_entry = _create_root_data_entry(f)
@@ -136,3 +145,139 @@ def export_as_nexus(
         _create_instrument_group(data, nx_entry)
         _create_detector_group(data, nx_entry)
         _create_source_group(data, nx_entry)
+
+
+def _create_lauetof_data_entry(file_obj: h5py.File) -> h5py.Group:
+    nx_entry = file_obj.create_group("entry")
+    nx_entry.attrs["NX_class"] = "NXentry"
+    return nx_entry
+
+
+def _add_lauetof_definition(nx_entry: h5py.Group) -> None:
+    nx_entry["definition"] = "NXlauetof"
+    nx_entry["definition"].attrs["NX_class"] = "NX_CHAR"
+
+
+def _create_lauetof_instrument(nx_entry: h5py.Group) -> h5py.Group:
+    nx_instrument = nx_entry.create_group("instrument")
+    nx_instrument.attrs["NX_class"] = "NXinstrument"
+    nx_instrument["name"] = "NMX"
+    nx_instrument["name"].attrs["NX_class"] = "NX_CHAR"
+    return nx_instrument
+
+
+def _add_lauetof_detector_group(nx_instrument: h5py.Group) -> None:
+    nx_detector = nx_instrument.create_group("NXdetector")
+    nx_detector.attrs["NX_class"] = "NXdetector"
+    # Polar angle
+    _create_dataset_from_var(
+        name="polar_angle",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit='deg'),  # TODO: Add real data
+    )
+    # Azimuthal angle
+    _create_dataset_from_var(
+        name="azimuthal_angle",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit=''),  # TODO: Add real data
+    )
+    # Data - shape: [n_x_pixels, n_y_pixels, n_tof_bins]
+    # The actual application definition defines it as integer,
+    # but we keep the original data type for now
+    _create_dataset_from_var(
+        name="data",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit=''),  # TODO: Add real data
+    )
+    # x_pixel_size
+    _create_dataset_from_var(
+        name="x_pixel_size",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit='mm'),  # TODO: Add real data
+    )
+    # y_pixel_size
+    _create_dataset_from_var(
+        name="y_pixel_size",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit='mm'),  # TODO: Add real data
+    )
+    # distance
+    _create_dataset_from_var(
+        name="distance",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit='m'),  # TODO: Add real data
+    )
+    # time_of_flight - shape: [nTOF]
+    _create_dataset_from_var(
+        name="time_of_flight",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit='s'),  # TODO: Add real data
+        # It should be actual time of flight values of each bin
+        # Not sure if it should be median/mean of the bin or bin edges
+    )
+
+
+def _add_lauetof_sample_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None:
+    nx_sample = nx_entry.create_group("sample")
+    nx_sample.attrs["NX_class"] = "NXsample"
+    nx_sample["name"] = data['sample_name'].value
+    _create_dataset_from_var(
+        name='orientation_matrix',
+        root_entry=nx_sample,
+        var=sc.array(
+            dims=['i', 'j'],
+            values=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            unit="dimensionless",
+        ),  # TODO: Add real data, the sample orientation matrix
+    )
+    _create_dataset_from_var(
+        name='unit_cell',
+        root_entry=nx_sample,
+        var=sc.array(
+            dims=['i'],
+            values=[1.0, 1.0, 1.0, 90.0, 90.0, 90.0],
+            unit="dimensionless",  # TODO: Add real data,
+            # a, b, c, alpha, beta, gamma
+        ),
+    )
+
+
+def _add_lauetof_monitor_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None:
+    nx_sample = nx_entry.create_group("control")
+    nx_sample.attrs["NX_class"] = "NXmonitor"
+    nx_sample["mode"] = "monitor"
+    nx_sample["mode"].attrs["NX_class"] = "NX_CHAR"
+    nx_sample["preset"] = 0.0  # Check if this is the correct value
+    nx_sample["preset"].attrs["NX_class"] = "NX_FLOAT"
+    _create_dataset_from_var(
+        name='data',
+        root_entry=nx_sample,
+        var=sc.array(
+            dims=['tof'], values=[1, 1, 1], unit="counts"
+        ),  # TODO: Add real data, bin values
+    )
+    _create_dataset_from_var(
+        name='time_of_flight',
+        root_entry=nx_sample,
+        var=sc.array(
+            dims=['tof'], values=[1, 1, 1], unit="s"
+        ),  # TODO: Add real data, bin edges
+    )
+
+
+def export_as_nxlauetof(
+    data: sc.DataGroup, output_file: str | pathlib.Path | io.BytesIO
+) -> None:
+    """Export the reduced data into a nxlauetof format.
+
+    Exporting step is not expected to be part of sciline pipelines.
+    """
+    with h5py.File(output_file, "w") as f:
+        f.attrs["NX_class"] = "NXlauetof"
+        nx_entry = _create_lauetof_data_entry(f)
+        _add_lauetof_definition(nx_entry)
+        nx_instrument = _create_lauetof_instrument(nx_entry)
+        _add_lauetof_detector_group(nx_instrument)
+        _add_lauetof_sample_group(data, nx_entry)
+        _add_lauetof_monitor_group(data, nx_entry)
+        # Skipping ``name`` field
