@@ -359,6 +359,9 @@ def polyval_wavelength(
 
 
     """
+    # We need to use float64 precision because
+    # the curve fit routine depends on finite difference
+    # estimates of the derivative.
     wavelength = wavelength.to(dtype='float64')
     out = sc.zeros_like(wavelength)
     out.unit = out_unit
