@@ -359,6 +359,7 @@ def polyval_wavelength(
 
 
     """
+    wavelength = wavelength.to(dtype='float64')
     out = sc.zeros_like(wavelength)
     out.unit = out_unit
     xk = sc.ones_like(wavelength)
