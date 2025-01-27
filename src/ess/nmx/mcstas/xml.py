@@ -212,6 +212,11 @@ class DetectorDesc:
         """Number of pixels in each row of the detector along the fast axis."""
         return self.num_x if self.fast_axis_name == 'x' else self.num_y
 
+    @property
+    def detector_shape(self) -> tuple:
+        """Shape of the detector panel. (num_x, num_y)"""
+        return (self.num_x, self.num_y)
+
 
 def _collect_detector_descriptions(tree: _XML) -> tuple[DetectorDesc, ...]:
     """Retrieve detector geometry descriptions from mcstas file."""
@@ -392,6 +397,9 @@ class McStasInstrument:
         slow_axes = [det.slow_axis for det in detectors]
         fast_axes = [det.fast_axis for det in detectors]
         origins = [self.sample.position_from_sample(det.position) for det in detectors]
+        detector_shapes = [sc.scalar(det.detector_shape) for det in detectors]
+        x_pixel_sizes = [det.step_x for det in detectors]
+        y_pixel_sizes = [det.step_y for det in detectors]
         return {
             'pixel_id': _construct_pixel_ids(detectors),
             'fast_axis': sc.concat(fast_axes, 'panel'),
@@ -401,6 +409,9 @@ class McStasInstrument:
             'source_position': self.sample.position_from_sample(self.source.position),
             'sample_name': sc.scalar(self.sample.name),
             'position': _detector_pixel_positions(detectors, self.sample),
+            'detector_shape': sc.concat(detector_shapes, 'panel'),
+            'x_pixel_size': sc.concat(x_pixel_sizes, 'panel'),
+            'y_pixel_size': sc.concat(y_pixel_sizes, 'panel'),
         }
 
 

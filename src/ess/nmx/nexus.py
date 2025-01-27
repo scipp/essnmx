@@ -164,7 +164,7 @@ def _add_lauetof_instrument(nx_entry: h5py.Group):
 
 
 def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> None:
-    nx_detector = nx_instrument.create_group(dg["name"])  # Detector name
+    nx_detector = nx_instrument.create_group(dg["name"].value)  # Detector name
     nx_detector.attrs["NX_class"] = "NXdetector"
     # Polar angle
     _create_dataset_from_var(
@@ -181,22 +181,19 @@ def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> 
     # Data - shape: [n_x_pixels, n_y_pixels, n_tof_bins]
     # The actual application definition defines it as integer,
     # but we keep the original data type for now
+    num_x, num_y = dg["detector_shape"].values[0]  # Probably better way to do this...
     _create_dataset_from_var(
         name="data",
         root_entry=nx_detector,
-        var=sc.scalar(0, unit=''),  # TODO: Add real data
+        var=sc.fold(dg["counts"].data, dim='id', sizes={'x': num_x, 'y': num_y}),
     )
     # x_pixel_size
     _create_dataset_from_var(
-        name="x_pixel_size",
-        root_entry=nx_detector,
-        var=sc.scalar(0, unit='mm'),  # TODO: Add real data
+        name="x_pixel_size", root_entry=nx_detector, var=dg["x_pixel_size"]
     )
     # y_pixel_size
     _create_dataset_from_var(
-        name="y_pixel_size",
-        root_entry=nx_detector,
-        var=sc.scalar(0, unit='mm'),  # TODO: Add real data
+        name="y_pixel_size", root_entry=nx_detector, var=dg["y_pixel_size"]
     )
     # distance
     _create_dataset_from_var(
@@ -208,7 +205,7 @@ def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> 
     _create_dataset_from_var(
         name="time_of_flight",
         root_entry=nx_detector,
-        var=sc.scalar(0, unit='s'),  # TODO: Add real data
+        var=sc.midpoints(dg["counts"].coords['t']),
         # It should be actual time of flight values of each bin
         # Not sure if it should be median/mean of the bin or bin edges
     )
@@ -274,6 +271,7 @@ def export_panel_independent_data_as_nxlauetof(
         _add_lauetof_definition(nx_entry)
         _add_lauetof_instrument(nx_entry)
         _add_lauetof_sample_group(data, nx_entry)
+        # Placeholder for ``monitor`` group
         _add_lauetof_monitor_group(data, nx_entry)
         # Skipping ``name`` field
 
@@ -288,10 +286,12 @@ def export_panel_dependent_data_as_nxlauetof(
 
 
 def export_as_nxlauetof(
-    data: sc.DataGroup, output_file: str | pathlib.Path | io.BytesIO
+    dg: sc.DataGroup, *dgs: sc.DataGroup, output_file: str | pathlib.Path | io.BytesIO
 ) -> None:
     """Export the reduced data into a nxlauetof format.
 
     Exporting step is not expected to be part of sciline pipelines.
     """
-    export_panel_independent_data_as_nxlauetof(data, output_file)
+
+    export_panel_independent_data_as_nxlauetof(dg, output_file)
+    export_panel_dependent_data_as_nxlauetof(dg, *dgs, output_file=output_file)
