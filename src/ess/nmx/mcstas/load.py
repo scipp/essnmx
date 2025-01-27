@@ -175,6 +175,7 @@ def load_mcstas(
             weights=da,
             proton_charge=proton_charge,
             crystal_rotation=crystal_rotation,
+            name=sc.scalar(detector_name),
             **coords,
         )
     )
