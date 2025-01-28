@@ -3,8 +3,10 @@
 import io
 import pathlib
 from functools import partial
+from typing import Any
 
 import h5py
+import numpy as np
 import scipp as sc
 
 
@@ -16,6 +18,7 @@ def _create_dataset_from_var(
     long_name: str | None = None,
     compression: str | None = None,
     compression_opts: int | None = None,
+    dtype: Any = None,
 ) -> h5py.Dataset:
     compression_options = {}
     if compression is not None:
@@ -25,7 +28,7 @@ def _create_dataset_from_var(
 
     dataset = root_entry.create_dataset(
         name,
-        data=var.values,
+        data=var.values if dtype is None else var.values.astype(dtype, copy=False),
         **compression_options,
     )
     dataset.attrs["units"] = str(var.unit)
@@ -186,6 +189,7 @@ def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> 
         name="data",
         root_entry=nx_detector,
         var=sc.fold(dg["counts"].data, dim='id', sizes={'x': num_x, 'y': num_y}),
+        dtype=np.uint,
     )
     # x_pixel_size
     _create_dataset_from_var(
