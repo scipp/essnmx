@@ -155,14 +155,12 @@ def _create_lauetof_data_entry(file_obj: h5py.File) -> h5py.Group:
 
 def _add_lauetof_definition(nx_entry: h5py.Group) -> None:
     nx_entry["definition"] = "NXlauetof"
-    nx_entry["definition"].attrs["NX_class"] = "NX_CHAR"
 
 
 def _add_lauetof_instrument(nx_entry: h5py.Group):
     nx_instrument = nx_entry.create_group("instrument")
     nx_instrument.attrs["NX_class"] = "NXinstrument"
     nx_instrument["name"] = "NMX"
-    nx_instrument["name"].attrs["NX_class"] = "NX_CHAR"
 
 
 def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> None:
@@ -245,9 +243,7 @@ def _add_lauetof_monitor_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None
     nx_sample = nx_entry.create_group("control")
     nx_sample.attrs["NX_class"] = "NXmonitor"
     nx_sample["mode"] = "monitor"
-    nx_sample["mode"].attrs["NX_class"] = "NX_CHAR"
     nx_sample["preset"] = 0.0  # Check if this is the correct value
-    nx_sample["preset"].attrs["NX_class"] = "NX_FLOAT"
     _create_dataset_from_var(
         name='data',
         root_entry=nx_sample,
