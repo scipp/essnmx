@@ -213,6 +213,19 @@ def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> 
         # It should be actual time of flight values of each bin
         # Not sure if it should be median/mean of the bin or bin edges
     )
+    # Legacy geometry information until we have a better way to store it
+    _create_dataset_from_var(
+        name="origin", root_entry=nx_detector, var=dg['origin_position']
+    )
+    # Fast axis, along where the pixel ID increases by 1
+    _create_dataset_from_var(
+        root_entry=nx_detector, var=dg['fast_axis'], name="fast_axis"
+    )
+    # Slow axis, along where the pixel ID increases
+    # by the number of pixels in the fast axis
+    _create_dataset_from_var(
+        root_entry=nx_detector, var=dg['slow_axis'], name="slow_axis"
+    )
 
 
 def _add_lauetof_sample_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None:
