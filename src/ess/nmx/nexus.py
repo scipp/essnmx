@@ -281,12 +281,14 @@ def export_panel_independent_data_as_nxlauetof(
 
 
 def export_panel_dependent_data_as_nxlauetof(
-    *dgs: sc.DataGroup, output_file: str | pathlib.Path | io.BytesIO
+    dg: sc.DataGroup,
+    output_file: str | pathlib.Path | io.BytesIO,
+    append_mode: bool = True,
 ) -> None:
-    with h5py.File(output_file, "r+") as f:
+    mode = "r+" if append_mode else "w"
+    with h5py.File(output_file, mode) as f:
         nx_instrument: h5py.Group = f["entry/instrument"]
-        for dg in dgs:
-            _add_lauetof_detector_group(dg, nx_instrument)
+        _add_lauetof_detector_group(dg, nx_instrument)
 
 
 def export_as_nxlauetof(
@@ -298,4 +300,5 @@ def export_as_nxlauetof(
     """
 
     export_panel_independent_data_as_nxlauetof(dg, output_file)
-    export_panel_dependent_data_as_nxlauetof(dg, *dgs, output_file=output_file)
+    for single_dg in [dg, *dgs]:
+        export_panel_dependent_data_as_nxlauetof(single_dg, output_file=output_file)

@@ -5,25 +5,44 @@ from typing import NewType
 import scipp as sc
 
 from .mcstas.xml import McStasInstrument
-from .types import DetectorName, TimeBinSteps
+from .types import (
+    CrystalRotation,
+    DetectorName,
+    NMXHistogram,
+    ProtonCharge,
+    RawEventData,
+    RawHistogram,
+    TimeBinSteps,
+)
 
 NMXData = NewType("NMXData", sc.DataGroup)
 NMXReducedData = NewType("NMXReducedData", sc.DataGroup)
 
 
-def bin_time_of_arrival(
-    nmx_data: NMXData,
+def bin_time_of_arrival(da: RawEventData, time_bin_step: TimeBinSteps) -> RawHistogram:
+    """Bin time of arrival data into ``time_bin_step`` bins."""
+    return RawHistogram(da.hist(t=time_bin_step))
+
+
+def format_nmx_reduced_data(
+    counts: NMXHistogram,
     detector_name: DetectorName,
     instrument: McStasInstrument,
-    time_bin_step: TimeBinSteps,
+    proton_charge: ProtonCharge,
+    crystal_rotation: CrystalRotation,
 ) -> NMXReducedData:
     """Bin time of arrival data into ``time_bin_step`` bins."""
-
-    counts = nmx_data.pop('weights').hist(t=time_bin_step)
     new_coords = instrument.to_coords(detector_name)
     new_coords.pop('pixel_id')
-
-    return NMXReducedData(sc.DataGroup(counts=counts, **{**nmx_data, **new_coords}))
+    return NMXReducedData(
+        sc.DataGroup(
+            counts=counts,
+            proton_charge=proton_charge,
+            crystal_rotation=crystal_rotation,
+            name=sc.scalar(detector_name),
+            **new_coords,
+        )
+    )
 
 
 def _concat_or_same(

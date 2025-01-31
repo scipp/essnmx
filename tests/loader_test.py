@@ -19,7 +19,7 @@ from ess.nmx.types import (
     DetectorBankPrefix,
     DetectorIndex,
     FilePath,
-    MaximumProbability,
+    MaximumCounts,
 )
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -54,7 +54,7 @@ def check_nmxdata_properties(dg: NMXData, fast_axis, slow_axis) -> None:
     # Check maximum value of weights.
     assert_allclose(
         dg['weights'].max().data,
-        sc.scalar(default_parameters[MaximumProbability], unit='counts', dtype=float),
+        sc.scalar(default_parameters[MaximumCounts], unit='counts', dtype=float),
         atol=sc.scalar(1e-10, unit='counts'),
         rtol=sc.scalar(1e-8),
     )
