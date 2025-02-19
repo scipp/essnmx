@@ -15,12 +15,27 @@ DetectorBankPrefix = NewType("DetectorBankPrefix", str)
 """Prefix identifying the event data array containing
 the events from the selected detector"""
 
-MaximumProbability = NewType("MaximumProbability", int)
+MaximumCounts = NewType("MaximumCounts", int)
 """Maximum number of counts after scaling the event counts"""
+
+MaximumProbability = NewType("MaximumProbability", float)
+"""Maximum probability to scale the McStas event counts"""
 
 RawEventData = NewType("RawEventData", sc.DataArray)
 """DataArray containing the event counts read from the McStas file,
 has coordinates 'id' and 't' """
+
+RawEventCounts = NewType("RawEventCounts", sc.Variable)
+"""Variable containing the event counts read from the McStas file"""
+
+RawHistogram = NewType("RawHistogram", sc.DataArray)
+"""Histogrammed the event counts in the pixel id and time dimensions"""
+
+NMXHistogram = NewType("NMXHistogram", sc.DataArray)
+"""Histogrammed event counts in the pixel id and time dimensions"""
+
+NMXRawData = NewType("NMXRawData", sc.DataGroup)
+"""DataGroup containing the raw event data with geometry information"""
 
 EventData = NewType("EventData", sc.DataArray)
 """The scaled RawEventData"""
