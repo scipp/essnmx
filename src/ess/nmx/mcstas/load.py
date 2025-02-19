@@ -43,6 +43,26 @@ def _exclude_zero_events(data: sc.Variable) -> sc.Variable:
     return data
 
 
+def _wrap_raw_event_data(data: sc.Variable, pixel_ids: sc.Variable) -> RawEventData:
+    data = data.rename_dims({'dim_0': 'event'})
+    # McStas can add an extra event line containing 0,0,0,0,0,0
+    # This line should not be included so we skip it.
+    data = _exclude_zero_events(data)
+    event_da = sc.DataArray(
+        coords={
+            'id': sc.array(
+                dims=['event'],
+                values=data['dim_1', 4].values,
+                dtype='int64',
+                unit=None,
+            ),
+            't': sc.array(dims=['event'], values=data['dim_1', 5].values, unit='s'),
+        },
+        data=sc.array(dims=['event'], values=data['dim_1', 0].values, unit='counts'),
+    )
+    return RawEventData(event_da.group(pixel_ids))
+
+
 def load_raw_event_data(
     file_path: FilePath,
     bank_prefix: DetectorBankPrefix,
@@ -55,28 +75,8 @@ def load_raw_event_data(
     with snx.File(file_path, 'r') as f:
         root = f["entry1/data"]
         (bank_name,) = (name for name in root.keys() if bank_name in name)
-        data = root[bank_name]["events"][()].rename_dims({'dim_0': 'event'})
-        # McStas can add an extra event line containing 0,0,0,0,0,0
-        # This line should not be included so we skip it.
-        data = _exclude_zero_events(data)
-        return RawEventData(
-            sc.DataArray(
-                coords={
-                    'id': sc.array(
-                        dims=['event'],
-                        values=data['dim_1', 4].values,
-                        dtype='int64',
-                        unit=None,
-                    ),
-                    't': sc.array(
-                        dims=['event'], values=data['dim_1', 5].values, unit='s'
-                    ),
-                },
-                data=sc.array(
-                    dims=['event'], values=data['dim_1', 0].values, unit='counts'
-                ),
-            ).group(coords.pop('pixel_id'))
-        )
+        data = root[bank_name]["events"][()]
+        return _wrap_raw_event_data(data, coords.pop('pixel_id'))
 
 
 def raw_event_data_chunks(
@@ -96,38 +96,27 @@ def raw_event_data_chunks(
     coords:
         Coordinates to generate the data array with the events
     chunk_size:
-        Number of rows to read at a time
+        Number of rows to read at a time.
+        If 0, chunk slice is determined automatically by the ``iter_chunks``.
+        Note that it only works if the dataset is already chunked.
+
     """
     bank_name = f'{bank_prefix}_dat_list_p_x_y_n_id_t'
     with snx.File(file_path, 'r') as f:
         root = f["entry1/data"]
-        num_events = root[bank_name]["events"].shape[0]
         (bank_name,) = (name for name in root.keys() if bank_name in name)
 
-    for start in range(0, num_events, chunk_size):
-        with snx.File(file_path, 'r') as f:
-            root = f["entry1/data"]
-            data = root[bank_name]["events"][
-                "dim_0", start : start + chunk_size
-            ].rename_dims({'dim_0': 'event'})
-        # McStas can add an extra event line containing 0,0,0,0,0,0
-        # This line should not be included so we skip it.
-        data = _exclude_zero_events(data)
-        event_da = sc.DataArray(
-            coords={
-                'id': sc.array(
-                    dims=['event'],
-                    values=data['dim_1', 4].values,
-                    dtype='int64',
-                    unit=None,
-                ),
-                't': sc.array(dims=['event'], values=data['dim_1', 5].values, unit='s'),
-            },
-            data=sc.array(
-                dims=['event'], values=data['dim_1', 0].values, unit='counts'
-            ),
-        )
-        yield RawEventData(event_da.group(pixel_ids))
+    with snx.File(file_path, 'r') as f:
+        root = f["entry1/data"]
+        dset = root[bank_name]["events"]
+        if chunk_size == 0:
+            for data_slice in dset.dataset.iter_chunks():
+                yield _wrap_raw_event_data(dset[data_slice], pixel_ids)
+        else:
+            num_events = dset.shape[0]
+            for start in range(0, num_events, chunk_size):
+                data = dset["dim_0", start : start + chunk_size]
+                yield _wrap_raw_event_data(data, pixel_ids)
 
 
 def load_crystal_rotation(
