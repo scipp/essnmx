@@ -14,12 +14,12 @@ from ess.nmx import default_parameters
 from ess.nmx.data import small_mcstas_2_sample, small_mcstas_3_sample
 from ess.nmx.mcstas.load import bank_names_to_detector_names, load_crystal_rotation
 from ess.nmx.mcstas.load import providers as loader_providers
-from ess.nmx.reduction import NMXData
+from ess.nmx.mcstas.reduction import mcstas_reduction_providers
 from ess.nmx.types import (
     DetectorBankPrefix,
     DetectorIndex,
     FilePath,
-    MaximumCounts,
+    NMXRawData,
 )
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -31,8 +31,8 @@ from mcstas_description_examples import (
 )
 
 
-def check_scalar_properties_mcstas_2(dg: NMXData):
-    """Test helper for NMXData loaded from McStas 2.
+def check_scalar_properties_mcstas_2(dg: NMXRawData):
+    """Test helper for NMXRawData loaded from McStas 2.
 
     Expected numbers are hard-coded based on the sample file.
     """
@@ -48,16 +48,9 @@ def check_scalar_properties_mcstas_2(dg: NMXData):
     assert dg['sample_name'] == sc.scalar("sampleMantid")
 
 
-def check_nmxdata_properties(dg: NMXData, fast_axis, slow_axis) -> None:
+def check_nmxdata_properties(dg: NMXRawData, fast_axis, slow_axis) -> None:
     assert isinstance(dg, sc.DataGroup)
     assert dg.shape == ((1280, 1280)[0] * (1280, 1280)[1], 1)
-    # Check maximum value of weights.
-    assert_allclose(
-        dg['weights'].max().data,
-        sc.scalar(default_parameters[MaximumCounts], unit='counts', dtype=float),
-        atol=sc.scalar(1e-10, unit='counts'),
-        rtol=sc.scalar(1e-8),
-    )
     assert_allclose(
         sc.squeeze(dg['fast_axis'], 'panel'), fast_axis, atol=sc.scalar(0.005)
     )
@@ -84,20 +77,20 @@ def test_file_reader_mcstas2(
     slow_axis = sc.vector(slow_axis)
 
     pl = sl.Pipeline(
-        loader_providers,
+        [*loader_providers, *mcstas_reduction_providers],
         params={
             FilePath: file_path,
             DetectorIndex: detector_index,
             **default_parameters,
         },
     )
-    dg = pl.compute(NMXData)
+    dg = pl.compute(NMXRawData)
 
     check_scalar_properties_mcstas_2(dg)
     check_nmxdata_properties(dg, fast_axis, slow_axis)
 
 
-def check_scalar_properties_mcstas_3(dg: NMXData):
+def check_scalar_properties_mcstas_3(dg: NMXRawData):
     """Test helper for NMXData loaded from McStas 3.
 
     Expected numbers are hard-coded based on the sample file.
@@ -128,14 +121,14 @@ def test_file_reader_mcstas3(detector_index, fast_axis, slow_axis) -> None:
     file_path = small_mcstas_3_sample()
 
     pl = sl.Pipeline(
-        loader_providers,
+        [*loader_providers, *mcstas_reduction_providers],
         params={
             FilePath: file_path,
             DetectorIndex: detector_index,
             **default_parameters,
         },
     )
-    dg, bank = pl.compute((NMXData, DetectorBankPrefix)).values()
+    dg, bank = pl.compute((NMXRawData, DetectorBankPrefix)).values()
 
     entry_path = f"entry1/data/{bank}_dat_list_p_x_y_n_id_t"
     with snx.File(file_path) as file:
@@ -188,7 +181,7 @@ def test_file_reader_mcstas_additional_fields(tmp_mcstas_file: pathlib.Path) -> 
             **default_parameters,
         },
     )
-    dg = pl.compute(NMXData)
+    dg = pl.compute(NMXRawData)
 
     assert isinstance(dg, sc.DataGroup)
 

@@ -3,7 +3,6 @@
 import scipp as sc
 
 from ..types import (
-    EventData,
     MaximumCounts,
     MaximumProbability,
     NMXHistogram,
@@ -33,4 +32,7 @@ def event_counts_from_probability(
         The maximum probability to scale the weights.
 
     """
-    return EventData(sc.scalar(max_counts, unit='counts') * da / max_probability)
+    return NMXHistogram(sc.scalar(max_counts, unit='counts') * da / max_probability)
+
+
+mcstas_reduction_providers = [maximum_probability, event_counts_from_probability]

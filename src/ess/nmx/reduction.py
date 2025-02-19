@@ -15,7 +15,6 @@ from .types import (
     TimeBinSteps,
 )
 
-NMXData = NewType("NMXData", sc.DataGroup)
 NMXReducedData = NewType("NMXReducedData", sc.DataGroup)
 
 

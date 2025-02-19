@@ -12,16 +12,16 @@ except importlib.metadata.PackageNotFoundError:
 del importlib
 
 from .data import small_mcstas_3_sample
-from .reduction import NMXData, NMXReducedData
-from .types import MaximumCounts
+from .reduction import NMXReducedData
+from .types import MaximumCounts, NMXRawData
 
-default_parameters = {MaximumCounts: 10000}
+default_parameters = {MaximumCounts: 10_000}
 
 del MaximumCounts
 
 __all__ = [
-    "small_mcstas_3_sample",
+    "NMXRawData",
     "NMXReducedData",
-    "NMXData",
     "default_parameters",
+    "small_mcstas_3_sample",
 ]
