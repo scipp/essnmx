@@ -6,25 +6,56 @@ from .mcstas.xml import McStasInstrument
 from .types import (
     CrystalRotation,
     DetectorName,
-    NMXReducedData,
+    McStasWeight2CountScaleFactor,
+    NMXReducedCounts,
     NMXReducedDataGroup,
+    NMXReducedProbability,
     PixelIds,
     ProtonCharge,
-    RawEventCounts,
+    RawEventProbability,
     TimeBinSteps,
 )
 
 
-def reduce_raw_event_counts(
-    da: RawEventCounts,
+def proton_charge_from_event_counts(da: NMXReducedCounts) -> ProtonCharge:
+    """Make up the proton charge from the event counts.
+
+    Proton charge is proportional to the number of neutrons,
+    which is proportional to the number of events.
+    The scale factor is manually chosen based on previous results
+    to be convenient for data manipulation in the next steps.
+    It is derived this way since
+    the protons are not part of McStas simulation,
+    and the number of neutrons is not included in the result.
+
+    Parameters
+    ----------
+    event_da:
+        The event data
+
+    """
+    # Arbitrary number to scale the proton charge
+    return ProtonCharge(sc.scalar(1 / 10_000, unit='dimensionless') * da.data.sum())
+
+
+def reduce_raw_event_probability(
+    da: RawEventProbability,
     pixel_ids: PixelIds,
     time_bin_step: TimeBinSteps,
-) -> NMXReducedData:
-    return NMXReducedData(da.group(pixel_ids).hist(t=time_bin_step))
+    scale_factor: McStasWeight2CountScaleFactor,
+) -> NMXReducedProbability:
+    return NMXReducedProbability(da.group(pixel_ids).hist(t=time_bin_step))
+
+
+def raw_event_probability_to_counts(
+    da: NMXReducedProbability,
+    scale_factor: McStasWeight2CountScaleFactor,
+) -> NMXReducedCounts:
+    return NMXReducedCounts(da * scale_factor)
 
 
 def format_nmx_reduced_data(
-    da: NMXReducedData,
+    da: NMXReducedCounts,
     detector_name: DetectorName,
     instrument: McStasInstrument,
     proton_charge: ProtonCharge,

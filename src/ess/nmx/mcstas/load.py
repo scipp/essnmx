@@ -17,8 +17,6 @@ from ..types import (
     McStasWeight2CountScaleFactor,
     NMXRawEventCountsDataGroup,
     PixelIds,
-    ProtonCharge,
-    RawEventCounts,
     RawEventProbability,
 )
 from .xml import McStasInstrument, read_mcstas_geometry_xml
@@ -196,46 +194,6 @@ def mcstas_weight_to_probability_scalefactor(
     )
 
 
-def event_weights_from_probability(
-    da: RawEventProbability, scale_factor: McStasWeight2CountScaleFactor
-) -> RawEventCounts:
-    """Create event weights by scaling probability data.
-
-    event_weights = max_counts * (probabilities / max_probability)
-
-    Parameters
-    ----------
-    da:
-        The probabilities of the events
-
-    scale_factor:
-        The scale factor to convert McStas weights to counts
-
-    """
-    return RawEventCounts(da * scale_factor)
-
-
-def proton_charge_from_event_counts(da: RawEventCounts) -> ProtonCharge:
-    """Make up the proton charge from the event counts.
-
-    Proton charge is proportional to the number of neutrons,
-    which is proportional to the number of events.
-    The scale factor is manually chosen based on previous results
-    to be convenient for data manipulation in the next steps.
-    It is derived this way since
-    the protons are not part of McStas simulation,
-    and the number of neutrons is not included in the result.
-
-    Parameters
-    ----------
-    event_da:
-        The event data
-
-    """
-    # Arbitrary number to scale the proton charge
-    return ProtonCharge(sc.scalar(1 / 10_000, unit='dimensionless') * da.data.sum())
-
-
 def bank_names_to_detector_names(description: str) -> dict[str, list[str]]:
     """Associates event data names with the names of the detectors
     where the events were detected"""
@@ -264,8 +222,7 @@ def bank_names_to_detector_names(description: str) -> dict[str, list[str]]:
 
 def load_mcstas(
     *,
-    da: RawEventCounts,
-    proton_charge: ProtonCharge,
+    da: RawEventProbability,
     crystal_rotation: CrystalRotation,
     detector_name: DetectorName,
     instrument: McStasInstrument,
@@ -274,7 +231,6 @@ def load_mcstas(
     return NMXRawEventCountsDataGroup(
         sc.DataGroup(
             weights=da,
-            proton_charge=proton_charge,
             crystal_rotation=crystal_rotation,
             name=sc.scalar(detector_name),
             pixel_id=instrument.pixel_ids(detector_name),
@@ -297,8 +253,6 @@ providers = (
     load_raw_event_data,
     maximum_probability,
     mcstas_weight_to_probability_scalefactor,
-    event_weights_from_probability,
-    proton_charge_from_event_counts,
     retrieve_pixel_ids,
     load_crystal_rotation,
     load_mcstas,

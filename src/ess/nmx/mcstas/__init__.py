@@ -5,7 +5,12 @@
 def McStasWorkflow():
     import sciline as sl
 
-    from ess.nmx.reduction import format_nmx_reduced_data, reduce_raw_event_counts
+    from ess.nmx.reduction import (
+        format_nmx_reduced_data,
+        proton_charge_from_event_counts,
+        raw_event_probability_to_counts,
+        reduce_raw_event_probability,
+    )
 
     from .load import providers as loader_providers
     from .xml import read_mcstas_geometry_xml
@@ -14,7 +19,9 @@ def McStasWorkflow():
         (
             *loader_providers,
             read_mcstas_geometry_xml,
-            reduce_raw_event_counts,
+            proton_charge_from_event_counts,
+            reduce_raw_event_probability,
+            raw_event_probability_to_counts,
             format_nmx_reduced_data,
         )
     )

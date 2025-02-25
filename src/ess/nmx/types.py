@@ -28,10 +28,6 @@ RawEventProbability = NewType("RawEventProbability", sc.DataArray)
 """DataArray containing the event probabilities read from the McStas file,
 has coordinates 'id' and 't' """
 
-RawEventCounts = NewType("RawEventCounts", sc.DataArray)
-"""DataArray containing the event counts converted from the probabilities,
-has coordinates 'id' and 't' """
-
 NMXRawEventCountsDataGroup = NewType("NMXRawEventCountsDataGroup", sc.DataGroup)
 """DataGroup containing the RawEventData and other metadata"""
 
@@ -50,7 +46,10 @@ TimeBinSteps = NewType("TimeBinSteps", int)
 PixelIds = NewType("PixelIds", sc.Variable)
 """The pixel ids of the detector"""
 
-NMXReducedData = NewType("NMXReducedData", sc.DataArray)
+NMXReducedProbability = NewType("NMXReducedProbability", sc.DataArray)
+"""Histogram of time-of-arrival and pixel-id."""
+
+NMXReducedCounts = NewType("NMXReducedCounts", sc.DataArray)
 """Histogram of time-of-arrival and pixel-id."""
 
 NMXReducedDataGroup = NewType("NMXReducedDataGroup", sc.DataGroup)

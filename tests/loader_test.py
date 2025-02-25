@@ -18,7 +18,6 @@ from ess.nmx.types import (
     DetectorBankPrefix,
     DetectorIndex,
     FilePath,
-    MaximumCounts,
     NMXRawEventCountsDataGroup,
 )
 
@@ -36,9 +35,6 @@ def check_scalar_properties_mcstas_2(dg: NMXRawEventCountsDataGroup):
 
     Expected numbers are hard-coded based on the sample file.
     """
-    assert_identical(
-        dg['proton_charge'], sc.scalar(1e-4 * dg['weights'].sum().value, unit='counts')
-    )
     assert_identical(dg['crystal_rotation'], sc.vector([20, 0, 90], unit='deg'))
     assert_identical(dg['sample_position'], sc.vector(value=[0, 0, 0], unit='m'))
     assert_identical(
@@ -51,13 +47,6 @@ def check_nmxdata_properties(
     dg: NMXRawEventCountsDataGroup, fast_axis, slow_axis
 ) -> None:
     assert isinstance(dg, sc.DataGroup)
-    # Check maximum value of weights.
-    assert_allclose(
-        dg['weights'].max().data,
-        sc.scalar(default_parameters[MaximumCounts], unit='counts', dtype=float),
-        atol=sc.scalar(1e-10, unit='counts'),
-        rtol=sc.scalar(1e-8),
-    )
     assert_allclose(
         sc.squeeze(dg['fast_axis'], 'panel'), fast_axis, atol=sc.scalar(0.005)
     )
@@ -102,10 +91,6 @@ def check_scalar_properties_mcstas_3(dg: NMXRawEventCountsDataGroup):
 
     Expected numbers are hard-coded based on the sample file.
     """
-    assert_identical(
-        dg['proton_charge'],
-        sc.scalar(1e-4 * dg['weights'].data.sum().value, unit='counts'),
-    )
     assert_identical(dg['crystal_rotation'], sc.vector([0, 0, 0], unit='deg'))
     assert_identical(dg['sample_position'], sc.vector(value=[0, 0, 0], unit='m'))
     assert_identical(

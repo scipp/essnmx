@@ -12,11 +12,14 @@ from ess.nmx.reduction import (
     NMXReducedDataGroup,
     format_nmx_reduced_data,
     merge_panels,
-    reduce_raw_event_counts,
+    proton_charge_from_event_counts,
+    raw_event_probability_to_counts,
+    reduce_raw_event_probability,
 )
 from ess.nmx.types import (
     DetectorIndex,
     FilePath,
+    MaximumCounts,
     NMXRawEventCountsDataGroup,
     TimeBinSteps,
 )
@@ -36,7 +39,13 @@ def mcstas_file_path(
 @pytest.fixture
 def mcstas_workflow(mcstas_file_path: str) -> sl.Pipeline:
     return sl.Pipeline(
-        [*load_providers, reduce_raw_event_counts, format_nmx_reduced_data],
+        [
+            *load_providers,
+            reduce_raw_event_probability,
+            proton_charge_from_event_counts,
+            raw_event_probability_to_counts,
+            format_nmx_reduced_data,
+        ],
         params={
             FilePath: mcstas_file_path,
             TimeBinSteps: 50,
@@ -70,8 +79,23 @@ def test_pipeline_mcstas_loader(mcstas_workflow: sl.Pipeline) -> None:
 
 def test_pipeline_mcstas_reduction(multi_bank_mcstas_workflow: sl.Pipeline) -> None:
     """Test if the loader graph is complete."""
+    from scipp.testing import assert_allclose, assert_identical
+
     nmx_reduced_data = multi_bank_mcstas_workflow.compute(NMXReducedDataGroup)
     assert nmx_reduced_data.shape == (3, (1280, 1280)[0] * (1280, 1280)[1], 50)
     # Panel, Pixels, Time bins
     assert isinstance(nmx_reduced_data, sc.DataGroup)
+
+    # Check maximum value of weights.
+    assert_allclose(
+        nmx_reduced_data['counts'].max().data,
+        sc.scalar(default_parameters[MaximumCounts], unit='counts', dtype=float),
+        atol=sc.scalar(1e-10, unit='counts'),
+        rtol=sc.scalar(1e-8),
+    )
+    assert_identical(
+        nmx_reduced_data['proton_charge'],
+        sc.scalar(1e-4, unit='dimensionless')
+        * nmx_reduced_data['counts'].data.sum('id').sum('t'),
+    )
     assert nmx_reduced_data.sizes['t'] == 50
