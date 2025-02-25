@@ -39,10 +39,7 @@ def proton_charge_from_event_counts(da: NMXReducedCounts) -> ProtonCharge:
 
 
 def reduce_raw_event_probability(
-    da: RawEventProbability,
-    pixel_ids: PixelIds,
-    time_bin_step: TimeBinSteps,
-    scale_factor: McStasWeight2CountScaleFactor,
+    da: RawEventProbability, pixel_ids: PixelIds, time_bin_step: TimeBinSteps
 ) -> NMXReducedProbability:
     return NMXReducedProbability(da.group(pixel_ids).hist(t=time_bin_step))
 
