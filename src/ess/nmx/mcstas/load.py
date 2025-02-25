@@ -13,6 +13,7 @@ from ..types import (
     DetectorName,
     EventData,
     FilePath,
+    MaximumCounts,
     MaximumProbability,
     ProtonCharge,
     RawEventData,
@@ -93,24 +94,31 @@ def load_crystal_rotation(
         )
 
 
+def maximum_probability(da: RawEventData) -> MaximumProbability:
+    """Find the maximum probability in the data."""
+    return MaximumProbability(da.data.max())
+
+
 def event_weights_from_probability(
-    da: RawEventData,
-    max_probability: MaximumProbability,
+    da: RawEventData, max_counts: MaximumCounts, max_probability: MaximumProbability
 ) -> EventData:
     """Create event weights by scaling probability data.
 
-    event_weights = max_probability * (probabilities / max(probabilities))
+    event_weights = max_counts * (probabilities / max_probability)
 
     Parameters
     ----------
     da:
         The probabilities of the events
 
+    max_counts:
+        The maximum number of counts after scaling the event counts.
+
     max_probability:
         The maximum probability to scale the weights.
 
     """
-    return sc.scalar(max_probability, unit='counts') * da / da.max()
+    return EventData(sc.scalar(max_counts, unit='counts') * da / max_probability)
 
 
 def proton_charge_from_event_data(da: EventData) -> ProtonCharge:
@@ -185,6 +193,7 @@ providers = (
     detector_name_from_index,
     load_event_data_bank_name,
     load_raw_event_data,
+    maximum_probability,
     event_weights_from_probability,
     proton_charge_from_event_data,
     load_crystal_rotation,
