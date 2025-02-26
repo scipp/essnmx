@@ -11,6 +11,25 @@ from .mcstas.load import load_event_data_bank_name
 from .types import DetectorBankPrefix, DetectorName, FilePath
 
 
+class MinAccumulator(Accumulator):
+    """Accumulator that keeps track of the maximum value seen so far."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._cur_min: sc.Variable | None = None
+
+    @property
+    def value(self) -> sc.Variable | None:
+        return self._cur_min
+
+    def _do_push(self, value: sc.Variable) -> None:
+        new_min = value.min()
+        if self._cur_min is None:
+            self._cur_min = new_min
+        else:
+            self._cur_min = min(self._cur_min, new_min)
+
+
 class MaxAccumulator(Accumulator):
     """Accumulator that keeps track of the maximum value seen so far."""
 
@@ -27,7 +46,7 @@ class MaxAccumulator(Accumulator):
         if self._cur_max is None:
             self._cur_max = new_max
         else:
-            self._cur_max = sc.concat([self._cur_max, new_max], dim='max').max('max')
+            self._cur_max = max(self._cur_max, new_max)
 
 
 def calculate_number_of_chunks(
