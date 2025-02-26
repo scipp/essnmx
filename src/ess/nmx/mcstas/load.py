@@ -159,6 +159,7 @@ def raw_event_data_chunk_generator(
                         stacklevel=2,
                     )
                 yield da
+
         else:
             num_events = dset.shape[0]
             for start in range(0, num_events, chunk_size):
