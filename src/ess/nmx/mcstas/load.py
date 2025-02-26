@@ -185,10 +185,11 @@ def mcstas_weight_to_probability_scalefactor(
     max_counts:
         The maximum number of counts after scaling the event counts.
 
-    max_probability:
-        The maximum probability to scale the weights.
+    scale_factor:
+        The scale factor to convert McStas weights to counts
 
     """
+
     return McStasWeight2CountScaleFactor(
         sc.scalar(max_counts, unit="counts") / max_probability
     )

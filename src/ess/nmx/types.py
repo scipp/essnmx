@@ -24,6 +24,7 @@ MaximumProbability = NewType("MaximumProbability", sc.Variable)
 McStasWeight2CountScaleFactor = NewType("McStasWeight2CountScaleFactor", sc.Variable)
 """Scale factor to convert McStas weights to counts"""
 
+
 RawEventProbability = NewType("RawEventProbability", sc.DataArray)
 """DataArray containing the event probabilities read from the McStas file,
 has coordinates 'id' and 't' """
