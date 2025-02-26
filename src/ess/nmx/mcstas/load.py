@@ -135,7 +135,8 @@ def raw_event_data_chunk_generator(
         dset = root[bank_name]["events"]
         if chunk_size == 0:
             for data_slice in dset.dataset.iter_chunks():
-                yield _wrap_raw_event_data(dset[data_slice])
+                dim_0_slice, _ = data_slice  # dim_0_slice, dim_1_slice
+                yield _wrap_raw_event_data(dset["dim_0", dim_0_slice])
         else:
             num_events = dset.shape[0]
             for start in range(0, num_events, chunk_size):
