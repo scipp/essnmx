@@ -8,6 +8,7 @@ from typing import Any
 import h5py
 import numpy as np
 import scipp as sc
+import scippnexus as snx
 
 from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
 
@@ -307,16 +308,57 @@ def export_metadata_as_nxlauetof(
         _add_arbitrary_metadata(nx_entry, **arbitrary_metadata)
 
 
+def _validate_existing_metadata(
+    dg: NMXReducedDataGroup,
+    detector_group: snx.Group,
+    sample_group: snx.Group,
+    safety_checks: bool = True,
+) -> None:
+    flag = True
+    # check pixel size
+    flag = flag and sc.identical(dg["x_pixel_size"], detector_group["x_pixel_size"])
+    flag = flag and sc.identical(dg["y_pixel_size"], detector_group["y_pixel_size"])
+    # check sample name
+    flag = flag and dg["sample_name"].value == sample_group["name"]
+
+    if not flag and safety_checks:
+        raise ValueError(
+            f"Metadata for detector '{dg['detector_name'].value}' in the file "
+            "does not match the provided data."
+        )
+    elif not flag and not safety_checks:
+        import warnings
+
+        warnings.warn(
+            UserWarning(
+                "Metadata for detector in the file does not match the provided data."
+                "This may lead to unexpected results."
+                "However, the operation will proceed as requested "
+                "since safety checks are disabled."
+            ),
+            stacklevel=2,
+        )
+
+
 def export_reduced_data_as_nxlauetof(
     dg: NMXReducedDataGroup,
     output_file: str | pathlib.Path | io.BytesIO,
     append_mode: bool = True,
+    safety_checks: bool = True,
 ) -> None:
     if not append_mode:
         raise NotImplementedError("Only append mode is supported for now.")
+    detector_group_path = f"entry/instrument/{dg['detector_name'].value}"
+    with snx.File(output_file, "r") as f:
+        _validate_existing_metadata(
+            dg=dg,
+            detector_group=f[detector_group_path][()],
+            sample_group=f["entry/sample"][()],
+            safety_checks=safety_checks,
+        )
 
     with h5py.File(output_file, "r+") as f:
-        nx_detector: h5py.Group = f[f"entry/instrument/{dg['detector_name'].value}"]
+        nx_detector: h5py.Group = f[detector_group_path]
         # Data - shape: [n_x_pixels, n_y_pixels, n_tof_bins]
         # The actual application definition defines it as integer,
         # but we keep the original data type for now
