@@ -14,9 +14,12 @@ from ..types import (
     FilePath,
     MaximumCounts,
     MaximumProbability,
+    MaximumTimeOfArrival,
     McStasWeight2CountScaleFactor,
+    MinimumTimeOfArrival,
     NMXDetectorMetadata,
     NMXExperimentMetadata,
+    NMXRawDataMetadata,
     NMXRawEventCountsDataGroup,
     PixelIds,
     RawEventProbability,
@@ -285,7 +288,35 @@ def retrieve_pixel_ids(
     return PixelIds(instrument.pixel_ids(detector_name))
 
 
+def calculate_minimum_toa(da: RawEventProbability) -> MinimumTimeOfArrival:
+    """Calculate the minimum time of arrival from the data."""
+    return MinimumTimeOfArrival(da.coords['t'].min())
+
+
+def calculate_maximum_toa(da: RawEventProbability) -> MaximumTimeOfArrival:
+    """Calculate the maximum time of arrival from the data."""
+    return MaximumTimeOfArrival(da.coords['t'].max())
+
+
+def retrieve_raw_data_metadata(
+    min_toa: MinimumTimeOfArrival,
+    max_toa: MaximumTimeOfArrival,
+    max_probability: MaximumProbability,
+) -> NMXRawDataMetadata:
+    """Retrieve the metadata of the raw data."""
+    return NMXRawDataMetadata(
+        sc.DataGroup(
+            min_toa=min_toa,
+            max_toa=max_toa,
+            max_probability=max_probability,
+        )
+    )
+
+
 providers = (
+    calculate_minimum_toa,
+    calculate_maximum_toa,
+    retrieve_raw_data_metadata,
     read_mcstas_geometry_xml,
     detector_name_from_index,
     load_event_data_bank_name,
