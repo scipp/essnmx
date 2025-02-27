@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
+from ..types import MaximumCounts
+
+default_parameters = {MaximumCounts: 10000}
 
 
 def McStasWorkflow():
@@ -14,11 +17,8 @@ def McStasWorkflow():
         reduce_raw_event_probability,
     )
 
-    from ..types import MaximumCounts
     from .load import providers as loader_providers
     from .xml import read_mcstas_geometry_xml
-
-    default_parameters = {MaximumCounts: 10000}
 
     return sl.Pipeline(
         (

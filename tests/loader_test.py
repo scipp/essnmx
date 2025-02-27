@@ -10,8 +10,8 @@ import scipp as sc
 import scippnexus as snx
 from scipp.testing import assert_allclose, assert_identical
 
-from ess.nmx import default_parameters
 from ess.nmx.data import small_mcstas_2_sample, small_mcstas_3_sample
+from ess.nmx.mcstas import default_parameters
 from ess.nmx.mcstas.load import bank_names_to_detector_names, load_crystal_rotation
 from ess.nmx.mcstas.load import providers as loader_providers
 from ess.nmx.types import (
