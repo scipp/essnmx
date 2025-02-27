@@ -263,10 +263,33 @@ def _add_lauetof_monitor_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None
     )
 
 
+def _add_arbitrary_metadata(
+    nx_entry: h5py.Group, **arbitrary_metadata: sc.Variable
+) -> None:
+    if not arbitrary_metadata:
+        return
+
+    metadata_group = nx_entry.create_group("metadata")
+    for key, value in arbitrary_metadata.items():
+        if not isinstance(value, sc.Variable):
+            import warnings
+
+            msg = f"Skipping metadata key '{key}' as it is not a scipp.Variable."
+            warnings.warn(UserWarning(msg), stacklevel=2)
+            continue
+        else:
+            _create_dataset_from_var(
+                name=key,
+                root_entry=metadata_group,
+                var=value,
+            )
+
+
 def export_metadata_as_nxlauetof(
-    experiment_metadata: NMXExperimentMetadata,
     *detector_metadatas: NMXDetectorMetadata,
+    experiment_metadata: NMXExperimentMetadata,
     output_file: str | pathlib.Path | io.BytesIO,
+    **arbitrary_metadata: sc.Variable,
 ):
     with h5py.File(output_file, "w") as f:
         f.attrs["NX_class"] = "NXlauetof"
@@ -280,6 +303,8 @@ def export_metadata_as_nxlauetof(
         # Add detector group metadata
         for detector_metadata in detector_metadatas:
             _add_lauetof_detector_group(detector_metadata, nx_instrument)
+        # Add arbitrary metadata
+        _add_arbitrary_metadata(nx_entry, **arbitrary_metadata)
 
 
 def export_reduced_data_as_nxlauetof(
@@ -301,4 +326,9 @@ def export_reduced_data_as_nxlauetof(
             root_entry=nx_detector,
             var=sc.fold(dg['counts'].data, dim='id', sizes={'x': num_x, 'y': num_y}),
             dtype=np.uint,
+        )
+        _create_dataset_from_var(
+            name='time_of_flight',
+            root_entry=nx_detector,
+            var=sc.midpoints(dg['counts'].coords['t'], dim='t'),
         )
