@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 import io
 import pathlib
+import warnings
 from functools import partial
 from typing import Any
 
@@ -135,8 +136,6 @@ def export_as_nexus(
 
     Currently exporting step is not expected to be part of sciline pipelines.
     """
-    import warnings
-
     warnings.warn(
         DeprecationWarning(
             "Exporting to custom NeXus format will be deprecated in the near future."
@@ -327,8 +326,6 @@ def _validate_existing_metadata(
             "does not match the provided data."
         )
     elif not flag and not safety_checks:
-        import warnings
-
         warnings.warn(
             UserWarning(
                 "Metadata for detector in the file does not match the provided data."
@@ -349,13 +346,17 @@ def export_reduced_data_as_nxlauetof(
     if not append_mode:
         raise NotImplementedError("Only append mode is supported for now.")
     detector_group_path = f"entry/instrument/{dg['detector_name'].value}"
-    with snx.File(output_file, "r") as f:
-        _validate_existing_metadata(
-            dg=dg,
-            detector_group=f[detector_group_path][()],
-            sample_group=f["entry/sample"][()],
-            safety_checks=safety_checks,
-        )
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=UserWarning)
+        # Userwarning is expected here as histogram data is not yet saved.
+        with snx.File(output_file, "r") as f:
+            _validate_existing_metadata(
+                dg=dg,
+                detector_group=f[detector_group_path][()],
+                sample_group=f["entry/sample"][()],
+                safety_checks=safety_checks,
+            )
 
     with h5py.File(output_file, "r+") as f:
         nx_detector: h5py.Group = f[detector_group_path]
