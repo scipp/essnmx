@@ -60,3 +60,12 @@ NMXReducedCounts = NewType("NMXReducedCounts", sc.DataArray)
 
 NMXReducedDataGroup = NewType("NMXReducedDataGroup", sc.DataGroup)
 """Datagroup containing Histogram(id, t), experiment metadata and detector metadata"""
+
+MinimumTimeOfArrival = NewType("MinimumTimeOfArrival", sc.Variable)
+"""Minimum time of arrival of the raw data"""
+
+MaximumTimeOfArrival = NewType("MaximumTimeOfArrival", sc.Variable)
+"""Maximum time of arrival of the raw data"""
+
+NMXRawDataMetadata = NewType("NMXRawDataMetadata", sc.DataGroup)
+"""Metadata of the raw data, i.e. maximum weight and min/max time of arrival"""
