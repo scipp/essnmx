@@ -107,7 +107,7 @@ def calculate_raw_data_metadata(
             if logger is not None:
                 logger.info(
                     "[{%s}/{%s}] Processed chunk for {%s}",
-                    i_da,
+                    i_da + 1,
                     max_chunk_id,
                     detector_name,
                 )
@@ -208,7 +208,7 @@ def reduction(
             if logger is not None:
                 logger.info(
                     "[{%s}/{%s}] Processed chunk for {%s}",
-                    i_da,
+                    i_da + 1,
                     max_chunk_id,
                     detector_name,
                 )
