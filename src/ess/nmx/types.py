@@ -75,4 +75,4 @@ class NMXRawDataMetadata:
 
     max_probability: MaximumProbability
     min_toa: MinimumTimeOfArrival
-    max_toa: Maxim
+    max_toa: MaximumTimeOfArrival
