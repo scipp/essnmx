@@ -24,13 +24,18 @@ MaximumProbability = NewType("MaximumProbability", sc.Variable)
 McStasWeight2CountScaleFactor = NewType("McStasWeight2CountScaleFactor", sc.Variable)
 """Scale factor to convert McStas weights to counts"""
 
+NMXExperimentMetadata = NewType("NMXExperimentMetadata", sc.DataGroup)
+"""Metadata of the experiment"""
+
+NMXDetectorMetadata = NewType("NMXDetectorMetadata", sc.DataGroup)
+"""Metadata of the detector"""
 
 RawEventProbability = NewType("RawEventProbability", sc.DataArray)
 """DataArray containing the event probabilities read from the McStas file,
 has coordinates 'id' and 't' """
 
 NMXRawEventCountsDataGroup = NewType("NMXRawEventCountsDataGroup", sc.DataGroup)
-"""DataGroup containing the RawEventData and other metadata"""
+"""DataGroup containing the RawEventData, experiment metadata and detector metadata"""
 
 ProtonCharge = NewType("ProtonCharge", sc.Variable)
 """The proton charge signal"""
@@ -54,4 +59,4 @@ NMXReducedCounts = NewType("NMXReducedCounts", sc.DataArray)
 """Histogram of time-of-arrival and pixel-id."""
 
 NMXReducedDataGroup = NewType("NMXReducedDataGroup", sc.DataGroup)
-"""Histogram of time-of-arrival and pixel-id, with additional metadata."""
+"""Datagroup containing Histogram(id, t), experiment metadata and detector metadata"""

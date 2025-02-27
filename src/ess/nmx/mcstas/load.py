@@ -15,6 +15,8 @@ from ..types import (
     MaximumCounts,
     MaximumProbability,
     McStasWeight2CountScaleFactor,
+    NMXDetectorMetadata,
+    NMXExperimentMetadata,
     NMXRawEventCountsDataGroup,
     PixelIds,
     RawEventProbability,
@@ -245,22 +247,34 @@ def bank_names_to_detector_names(description: str) -> dict[str, list[str]]:
     return bank_names_to_detector_names
 
 
+def load_experiment_metadata(
+    instrument: McStasInstrument, crystal_rotation: CrystalRotation
+) -> NMXExperimentMetadata:
+    """Load the experiment metadata from the McStas file."""
+    return NMXExperimentMetadata(
+        sc.DataGroup(
+            crystal_rotation=crystal_rotation, **instrument.experiment_metadata()
+        )
+    )
+
+
+def load_detector_metadata(
+    instrument: McStasInstrument, detector_name: DetectorName
+) -> NMXDetectorMetadata:
+    """Load the detector metadata from the McStas file."""
+    return NMXDetectorMetadata(
+        sc.DataGroup(**instrument.detector_metadata(detector_name))
+    )
+
+
 def load_mcstas(
     *,
     da: RawEventProbability,
-    crystal_rotation: CrystalRotation,
-    detector_name: DetectorName,
-    instrument: McStasInstrument,
+    experiment_metadata: NMXExperimentMetadata,
+    detector_metadata: NMXDetectorMetadata,
 ) -> NMXRawEventCountsDataGroup:
-    coords = instrument.to_coords(detector_name)
     return NMXRawEventCountsDataGroup(
-        sc.DataGroup(
-            weights=da,
-            crystal_rotation=crystal_rotation,
-            name=sc.scalar(detector_name),
-            pixel_id=instrument.pixel_ids(detector_name),
-            **coords,
-        )
+        sc.DataGroup(weights=da, **experiment_metadata, **detector_metadata)
     )
 
 
@@ -281,4 +295,6 @@ providers = (
     retrieve_pixel_ids,
     load_crystal_rotation,
     load_mcstas,
+    load_experiment_metadata,
+    load_detector_metadata,
 )

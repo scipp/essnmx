@@ -2,11 +2,10 @@
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 import scipp as sc
 
-from .mcstas.xml import McStasInstrument
 from .types import (
-    CrystalRotation,
-    DetectorName,
     McStasWeight2CountScaleFactor,
+    NMXDetectorMetadata,
+    NMXExperimentMetadata,
     NMXReducedCounts,
     NMXReducedDataGroup,
     NMXReducedProbability,
@@ -53,20 +52,18 @@ def raw_event_probability_to_counts(
 
 def format_nmx_reduced_data(
     da: NMXReducedCounts,
-    detector_name: DetectorName,
-    instrument: McStasInstrument,
     proton_charge: ProtonCharge,
-    crystal_rotation: CrystalRotation,
+    experiment_metadata: NMXExperimentMetadata,
+    detector_metadata: NMXDetectorMetadata,
 ) -> NMXReducedDataGroup:
     """Bin time of arrival data into ``time_bin_step`` bins."""
-    new_coords = instrument.to_coords(detector_name)
 
     return NMXReducedDataGroup(
         sc.DataGroup(
             counts=da,
             proton_charge=proton_charge,
-            crystal_rotation=crystal_rotation,
-            **new_coords,
+            **experiment_metadata,
+            **detector_metadata,
         )
     )
 
