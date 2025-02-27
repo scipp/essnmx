@@ -68,11 +68,10 @@ MinimumTimeOfArrival = NewType("MinimumTimeOfArrival", sc.Variable)
 MaximumTimeOfArrival = NewType("MaximumTimeOfArrival", sc.Variable)
 """Maximum time of arrival of the raw data"""
 
-
 @dataclass
 class NMXRawDataMetadata:
     """Metadata of the raw data, i.e. maximum weight and min/max time of arrival"""
 
     max_probability: MaximumProbability
     min_toa: MinimumTimeOfArrival
-    max_toa: MaximumTimeOfArrival
+    max_toa: Maxim
