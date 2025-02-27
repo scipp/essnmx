@@ -305,11 +305,7 @@ def retrieve_raw_data_metadata(
 ) -> NMXRawDataMetadata:
     """Retrieve the metadata of the raw data."""
     return NMXRawDataMetadata(
-        sc.DataGroup(
-            min_toa=min_toa,
-            max_toa=max_toa,
-            max_probability=max_probability,
-        )
+        min_toa=min_toa, max_toa=max_toa, max_probability=max_probability
     )
 
 
