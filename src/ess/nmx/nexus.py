@@ -3,9 +3,13 @@
 import io
 import pathlib
 from functools import partial
+from typing import Any
 
 import h5py
+import numpy as np
 import scipp as sc
+
+from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
 
 
 def _create_dataset_from_var(
@@ -16,6 +20,7 @@ def _create_dataset_from_var(
     long_name: str | None = None,
     compression: str | None = None,
     compression_opts: int | None = None,
+    dtype: Any = None,
 ) -> h5py.Dataset:
     compression_options = {}
     if compression is not None:
@@ -25,7 +30,7 @@ def _create_dataset_from_var(
 
     dataset = root_entry.create_dataset(
         name,
-        data=var.values,
+        data=var.values if dtype is None else var.values.astype(dtype, copy=False),
         **compression_options,
     )
     dataset.attrs["units"] = str(var.unit)
@@ -145,3 +150,155 @@ def export_as_nexus(
         _create_instrument_group(data, nx_entry)
         _create_detector_group(data, nx_entry)
         _create_source_group(data, nx_entry)
+
+
+def _create_lauetof_data_entry(file_obj: h5py.File) -> h5py.Group:
+    nx_entry = file_obj.create_group("entry")
+    nx_entry.attrs["NX_class"] = "NXentry"
+    return nx_entry
+
+
+def _add_lauetof_definition(nx_entry: h5py.Group) -> None:
+    nx_entry["definition"] = "NXlauetof"
+
+
+def _add_lauetof_instrument(nx_entry: h5py.Group) -> h5py.Group:
+    nx_instrument = nx_entry.create_group("instrument")
+    nx_instrument.attrs["NX_class"] = "NXinstrument"
+    nx_instrument["name"] = "NMX"
+    return nx_instrument
+
+
+def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> None:
+    nx_detector = nx_instrument.create_group(dg["detector_name"].value)  # Detector name
+    nx_detector.attrs["NX_class"] = "NXdetector"
+    # Polar angle
+    _create_dataset_from_var(
+        name="polar_angle",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit='deg'),  # TODO: Add real data
+    )
+    # Azimuthal angle
+    _create_dataset_from_var(
+        name="azimuthal_angle",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit=''),  # TODO: Add real data
+    )
+    # x_pixel_size
+    _create_dataset_from_var(
+        name="x_pixel_size", root_entry=nx_detector, var=dg["x_pixel_size"]
+    )
+    # y_pixel_size
+    _create_dataset_from_var(
+        name="y_pixel_size", root_entry=nx_detector, var=dg["y_pixel_size"]
+    )
+    # distance
+    _create_dataset_from_var(
+        name="distance",
+        root_entry=nx_detector,
+        var=sc.scalar(0, unit='m'),  # TODO: Add real data
+    )
+    # Legacy geometry information until we have a better way to store it
+    _create_dataset_from_var(
+        name="origin", root_entry=nx_detector, var=dg['origin_position']
+    )
+    # Fast axis, along where the pixel ID increases by 1
+    _create_dataset_from_var(
+        root_entry=nx_detector, var=dg['fast_axis'], name="fast_axis"
+    )
+    # Slow axis, along where the pixel ID increases
+    # by the number of pixels in the fast axis
+    _create_dataset_from_var(
+        root_entry=nx_detector, var=dg['slow_axis'], name="slow_axis"
+    )
+
+
+def _add_lauetof_sample_group(dg: NMXExperimentMetadata, nx_entry: h5py.Group) -> None:
+    nx_sample = nx_entry.create_group("sample")
+    nx_sample.attrs["NX_class"] = "NXsample"
+    nx_sample["name"] = (
+        dg['sample_name'].value
+        if isinstance(dg['sample_name'], sc.Variable)
+        else dg['sample_name']
+    )
+    _create_dataset_from_var(
+        name='orientation_matrix',
+        root_entry=nx_sample,
+        var=sc.array(
+            dims=['i', 'j'],
+            values=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            unit="dimensionless",
+        ),  # TODO: Add real data, the sample orientation matrix
+    )
+    _create_dataset_from_var(
+        name='unit_cell',
+        root_entry=nx_sample,
+        var=sc.array(
+            dims=['i'],
+            values=[1.0, 1.0, 1.0, 90.0, 90.0, 90.0],
+            unit="dimensionless",  # TODO: Add real data,
+            # a, b, c, alpha, beta, gamma
+        ),
+    )
+
+
+def _add_lauetof_monitor_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None:
+    nx_monitor = nx_entry.create_group("control")
+    nx_monitor.attrs["NX_class"] = "NXmonitor"
+    nx_monitor["mode"] = "monitor"
+    nx_monitor["preset"] = 0.0  # Check if this is the correct value
+    _create_dataset_from_var(
+        name='data',
+        root_entry=nx_monitor,
+        var=sc.array(
+            dims=['tof'], values=[1, 1, 1], unit="counts"
+        ),  # TODO: Add real data, bin values
+    )
+    _create_dataset_from_var(
+        name='time_of_flight',
+        root_entry=nx_monitor,
+        var=sc.array(
+            dims=['tof'], values=[1, 1, 1], unit="s"
+        ),  # TODO: Add real data, bin edges
+    )
+
+
+def export_metadata_as_nxlauetof(
+    experiment_metadata: NMXExperimentMetadata,
+    *detector_metadatas: NMXDetectorMetadata,
+    output_file: str | pathlib.Path | io.BytesIO,
+):
+    with h5py.File(output_file, "w") as f:
+        f.attrs["NX_class"] = "NXlauetof"
+        nx_entry = _create_lauetof_data_entry(f)
+        _add_lauetof_definition(nx_entry)
+        nx_instrument = _add_lauetof_instrument(nx_entry)
+        _add_lauetof_sample_group(experiment_metadata, nx_entry)
+        # Placeholder for ``monitor`` group
+        _add_lauetof_monitor_group(experiment_metadata, nx_entry)
+        # Skipping ``name`` field
+        # Add detector group metadata
+        for detector_metadata in detector_metadatas:
+            _add_lauetof_detector_group(detector_metadata, nx_instrument)
+
+
+def export_reduced_data_as_nxlauetof(
+    dg: NMXReducedDataGroup,
+    output_file: str | pathlib.Path | io.BytesIO,
+    append_mode: bool = True,
+) -> None:
+    if not append_mode:
+        raise NotImplementedError("Only append mode is supported for now.")
+
+    with h5py.File(output_file, "r+") as f:
+        nx_detector: h5py.Group = f[f"entry/instrument/{dg['detector_name'].value}"]
+        # Data - shape: [n_x_pixels, n_y_pixels, n_tof_bins]
+        # The actual application definition defines it as integer,
+        # but we keep the original data type for now
+        num_x, num_y = dg["detector_shape"].value  # Probably better way to do this
+        _create_dataset_from_var(
+            name="data",
+            root_entry=nx_detector,
+            var=sc.fold(dg['counts'].data, dim='id', sizes={'x': num_x, 'y': num_y}),
+            dtype=np.uint,
+        )
