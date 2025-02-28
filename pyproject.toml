@@ -51,6 +51,9 @@ test = [
     "pytest",
 ]
 
+[project.scripts]
+essnmx_reduce_mcstas = "ess.nmx.mcstas.executables:main"
+
 [project.urls]
 "Bug Tracker" = "https://github.com/scipp/essnmx/issues"
 "Documentation" = "https://scipp.github.io/essnmx"
