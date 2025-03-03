@@ -247,13 +247,15 @@ def _add_lauetof_monitor_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None
     nx_monitor.attrs["NX_class"] = "NXmonitor"
     nx_monitor["mode"] = "monitor"
     nx_monitor["preset"] = 0.0  # Check if this is the correct value
-    _create_dataset_from_var(
+    data_dset = _create_dataset_from_var(
         name='data',
         root_entry=nx_monitor,
         var=sc.array(
             dims=['tof'], values=[1, 1, 1], unit="counts"
         ),  # TODO: Add real data, bin values
     )
+    data_dset.attrs["signal"] = 1
+    data_dset.attrs["primary"] = 1
     _create_dataset_from_var(
         name='time_of_flight',
         root_entry=nx_monitor,
@@ -362,12 +364,13 @@ def export_reduced_data_as_nxlauetof(
         # The actual application definition defines it as integer,
         # but we keep the original data type for now
         num_x, num_y = dg["detector_shape"].value  # Probably better way to do this
-        _create_dataset_from_var(
+        data_dset = _create_dataset_from_var(
             name="data",
             root_entry=nx_detector,
             var=sc.fold(dg['counts'].data, dim='id', sizes={'x': num_x, 'y': num_y}),
             dtype=np.uint,
         )
+        data_dset.attrs["signal"] = 1
         _create_dataset_from_var(
             name='time_of_flight',
             root_entry=nx_detector,
