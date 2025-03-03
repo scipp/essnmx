@@ -3,7 +3,9 @@
 import scipp as sc
 
 from .types import (
+    MaximumTimeOfArrival,
     McStasWeight2CountScaleFactor,
+    MinimumTimeOfArrival,
     NMXDetectorMetadata,
     NMXExperimentMetadata,
     NMXReducedCounts,
@@ -14,6 +16,16 @@ from .types import (
     RawEventProbability,
     TimeBinSteps,
 )
+
+
+def calculate_minimum_toa(da: RawEventProbability) -> MinimumTimeOfArrival:
+    """Calculate the minimum time of arrival from the data."""
+    return MinimumTimeOfArrival(da.coords['t'].min())
+
+
+def calculate_maximum_toa(da: RawEventProbability) -> MaximumTimeOfArrival:
+    """Calculate the maximum time of arrival from the data."""
+    return MaximumTimeOfArrival(da.coords['t'].max())
 
 
 def proton_charge_from_event_counts(da: NMXReducedCounts) -> ProtonCharge:
