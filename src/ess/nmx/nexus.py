@@ -182,7 +182,7 @@ def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> 
     _create_dataset_from_var(
         name="azimuthal_angle",
         root_entry=nx_detector,
-        var=sc.scalar(0, unit=''),  # TODO: Add real data
+        var=sc.scalar(0, unit='deg'),  # TODO: Add real data
     )
     # x_pixel_size
     _create_dataset_from_var(
