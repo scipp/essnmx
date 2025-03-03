@@ -290,7 +290,27 @@ def export_metadata_as_nxlauetof(
     experiment_metadata: NMXExperimentMetadata,
     output_file: str | pathlib.Path | io.BytesIO,
     **arbitrary_metadata: sc.Variable,
-):
+) -> None:
+    """Export the metadata to a NeXus file with the LAUE_TOF application definition.
+
+    ``Metadata`` in this context refers to the information
+    that is not part of the reduced detector counts itself,
+    but is necessary for the interpretation of the reduced data.
+    Since NMX can have arbitrary number of detectors,
+    this function can take multiple detector metadata objects.
+
+    Parameters
+    ----------
+    detector_metadatas:
+        Detector metadata objects.
+    experiment_metadata:
+        Experiment metadata object.
+    output_file:
+        Output file path.
+    arbitrary_metadata:
+        Arbitrary metadata that does not fit into the existing metadata objects.
+
+    """
     with h5py.File(output_file, "w") as f:
         f.attrs["NX_class"] = "NXlauetof"
         nx_entry = _create_lauetof_data_entry(f)
@@ -312,6 +332,27 @@ def export_reduced_data_as_nxlauetof(
     output_file: str | pathlib.Path | io.BytesIO,
     append_mode: bool = True,
 ) -> None:
+    """Export the reduced data to a NeXus file with the LAUE_TOF application definition.
+
+    Even though this function only exports
+    reduced data(detector counts and its coordinates),
+    the input should contain all the necessary metadata
+    for minimum sanity check.
+
+    Parameters
+    ----------
+    dg:
+        Reduced data and metadata.
+    output_file:
+        Output file path.
+    append_mode:
+        If ``True``, the file is opened in append mode.
+        If ``False``, the file is opened in None-append mode.
+        > None-append mode is not supported for now.
+        > Only append mode is supported for now.
+
+    """
+
     if not append_mode:
         raise NotImplementedError("Only append mode is supported for now.")
 
