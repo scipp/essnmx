@@ -13,8 +13,6 @@ import scippnexus as snx
 
 from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
 
-from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
-
 
 def _create_dataset_from_var(
     *,
@@ -362,24 +360,6 @@ def export_reduced_data_as_nxlauetof(
     append_mode: bool = True,
     safety_checks: bool = True,
 ) -> None:
-    if not append_mode:
-        raise NotImplementedError("Only append mode is supported for now.")
-    detector_group_path = f"entry/instrument/{dg['detector_name'].value}"
-
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=UserWarning)
-        # Userwarning is expected here as histogram data is not yet saved.
-        with snx.File(output_file, "r") as f:
-            _validate_existing_metadata(
-                dg=dg,
-                detector_group=f[detector_group_path][()],
-                sample_group=f["entry/sample"][()],
-                safety_checks=safety_checks,
-            )
-
-    with h5py.File(output_file, "r+") as f:
-        nx_detector: h5py.Group = f[detector_group_path]
-) -> None:
     """Export the reduced data to a NeXus file with the LAUE_TOF application definition.
 
     Even though this function only exports
@@ -400,6 +380,23 @@ def export_reduced_data_as_nxlauetof(
         > Only append mode is supported for now.
 
     """
+    if not append_mode:
+        raise NotImplementedError("Only append mode is supported for now.")
+    detector_group_path = f"entry/instrument/{dg['detector_name'].value}"
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=UserWarning)
+        # Userwarning is expected here as histogram data is not yet saved.
+        with snx.File(output_file, "r") as f:
+            _validate_existing_metadata(
+                dg=dg,
+                detector_group=f[detector_group_path][()],
+                sample_group=f["entry/sample"][()],
+                safety_checks=safety_checks,
+            )
+
+    with h5py.File(output_file, "r+") as f:
+        nx_detector: h5py.Group = f[detector_group_path]
 
     if not append_mode:
         raise NotImplementedError("Only append mode is supported for now.")
