@@ -172,27 +172,22 @@ def _add_lauetof_instrument(nx_entry: h5py.Group) -> h5py.Group:
 def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> None:
     nx_detector = nx_instrument.create_group(dg["detector_name"].value)  # Detector name
     nx_detector.attrs["NX_class"] = "NXdetector"
-    # Polar angle
     _create_dataset_from_var(
         name="polar_angle",
         root_entry=nx_detector,
         var=sc.scalar(0, unit='deg'),  # TODO: Add real data
     )
-    # Azimuthal angle
     _create_dataset_from_var(
         name="azimuthal_angle",
         root_entry=nx_detector,
         var=sc.scalar(0, unit='deg'),  # TODO: Add real data
     )
-    # x_pixel_size
     _create_dataset_from_var(
         name="x_pixel_size", root_entry=nx_detector, var=dg["x_pixel_size"]
     )
-    # y_pixel_size
     _create_dataset_from_var(
         name="y_pixel_size", root_entry=nx_detector, var=dg["y_pixel_size"]
     )
-    # distance
     _create_dataset_from_var(
         name="distance",
         root_entry=nx_detector,
