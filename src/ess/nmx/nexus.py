@@ -317,7 +317,7 @@ def export_metadata_as_nxlauetof(
         _add_lauetof_sample_group(experiment_metadata, nx_entry)
         # Placeholder for ``monitor`` group
         _add_lauetof_monitor_group(experiment_metadata, nx_entry)
-        # Skipping ``name`` field
+        # Skipping ``NXdata``(name) field with data link
         # Add detector group metadata
         for detector_metadata in detector_metadatas:
             _add_lauetof_detector_group(detector_metadata, nx_instrument)
