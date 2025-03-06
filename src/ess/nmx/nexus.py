@@ -33,7 +33,8 @@ def _create_dataset_from_var(
         data=var.values if dtype is None else var.values.astype(dtype, copy=False),
         **compression_options,
     )
-    dataset.attrs["units"] = str(var.unit)
+    if var.unit is not None:
+        dataset.attrs["units"] = str(var.unit)
     if long_name is not None:
         dataset.attrs["long_name"] = long_name
     return dataset
