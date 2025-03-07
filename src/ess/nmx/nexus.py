@@ -13,6 +13,8 @@ import scippnexus as snx
 
 from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
 
+from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
+
 
 def _create_dataset_from_var(
     *,
@@ -35,7 +37,8 @@ def _create_dataset_from_var(
         data=var.values if dtype is None else var.values.astype(dtype, copy=False),
         **compression_options,
     )
-    dataset.attrs["units"] = str(var.unit)
+    if var.unit is not None:
+        dataset.attrs["units"] = str(var.unit)
     if long_name is not None:
         dataset.attrs["long_name"] = long_name
     return dataset
@@ -316,7 +319,7 @@ def export_metadata_as_nxlauetof(
         _add_lauetof_sample_group(experiment_metadata, nx_entry)
         # Placeholder for ``monitor`` group
         _add_lauetof_monitor_group(experiment_metadata, nx_entry)
-        # Skipping ``name`` field
+        # Skipping ``NXdata``(name) field with data link
         # Add detector group metadata
         for detector_metadata in detector_metadatas:
             _add_lauetof_detector_group(detector_metadata, nx_instrument)
