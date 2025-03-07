@@ -13,8 +13,6 @@ import scippnexus as snx
 
 from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
 
-from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
-
 
 def _create_dataset_from_var(
     *,
