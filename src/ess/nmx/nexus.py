@@ -22,6 +22,10 @@ from .types import (
 )
 
 
+def _create_dataset_from_string(*, root_entry: h5py.Group, name: str, var: str) -> None:
+    root_entry.create_dataset(name, dtype=h5py.string_dtype(), data=var)
+
+
 def _create_dataset_from_var(
     *,
     root_entry: h5py.Group,
@@ -168,13 +172,13 @@ def _create_lauetof_data_entry(file_obj: h5py.File) -> h5py.Group:
 
 
 def _add_lauetof_definition(nx_entry: h5py.Group) -> None:
-    nx_entry["definition"] = "NXlauetof"
+    _create_dataset_from_string(root_entry=nx_entry, name="definition", var="NXlauetof")
 
 
 def _add_lauetof_instrument(nx_entry: h5py.Group) -> h5py.Group:
     nx_instrument = nx_entry.create_group("instrument")
     nx_instrument.attrs["NX_class"] = "NXinstrument"
-    nx_instrument["name"] = "NMX"
+    _create_dataset_from_string(root_entry=nx_instrument, name="name", var="NMX")
     return nx_instrument
 
 
@@ -220,10 +224,10 @@ def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> 
 def _add_lauetof_sample_group(dg: NMXExperimentMetadata, nx_entry: h5py.Group) -> None:
     nx_sample = nx_entry.create_group("sample")
     nx_sample.attrs["NX_class"] = "NXsample"
-    nx_sample["name"] = (
-        dg['sample_name'].value
-        if isinstance(dg['sample_name'], sc.Variable)
-        else dg['sample_name']
+    _create_dataset_from_string(
+        root_entry=nx_sample,
+        name='name',
+        var=dg['sample_name'].value,
     )
     _create_dataset_from_var(
         name='orientation_matrix',
@@ -249,7 +253,7 @@ def _add_lauetof_sample_group(dg: NMXExperimentMetadata, nx_entry: h5py.Group) -
 def _add_lauetof_monitor_group(data: sc.DataGroup, nx_entry: h5py.Group) -> None:
     nx_monitor = nx_entry.create_group("control")
     nx_monitor.attrs["NX_class"] = "NXmonitor"
-    nx_monitor["mode"] = "monitor"
+    _create_dataset_from_string(root_entry=nx_monitor, name='mode', var='monitor')
     nx_monitor["preset"] = 0.0  # Check if this is the correct value
     data_dset = _create_dataset_from_var(
         name='data',
