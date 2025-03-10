@@ -3,15 +3,23 @@
 import io
 import pathlib
 import warnings
+from collections.abc import Callable, Generator
 from functools import partial
-from typing import Any
+from typing import Any, TypeVar
 
 import h5py
 import numpy as np
+import sciline as sl
 import scipp as sc
-import scippnexus as snx
 
-from .types import NMXDetectorMetadata, NMXExperimentMetadata, NMXReducedDataGroup
+from .types import (
+    DetectorIndex,
+    DetectorName,
+    FilePath,
+    NMXDetectorMetadata,
+    NMXExperimentMetadata,
+    NMXReducedDataGroup,
+)
 
 
 def _create_dataset_from_var(
@@ -283,8 +291,7 @@ def _add_arbitrary_metadata(
             )
 
 
-def export_metadata_as_nxlauetof(
-    *detector_metadatas: NMXDetectorMetadata,
+def _export_static_metadata_as_nxlauetof(
     experiment_metadata: NMXExperimentMetadata,
     output_file: str | pathlib.Path | io.BytesIO,
     **arbitrary_metadata: sc.Variable,
@@ -299,8 +306,6 @@ def export_metadata_as_nxlauetof(
 
     Parameters
     ----------
-    detector_metadatas:
-        Detector metadata objects.
     experiment_metadata:
         Experiment metadata object.
     output_file:
@@ -313,53 +318,51 @@ def export_metadata_as_nxlauetof(
         f.attrs["NX_class"] = "NXlauetof"
         nx_entry = _create_lauetof_data_entry(f)
         _add_lauetof_definition(nx_entry)
-        nx_instrument = _add_lauetof_instrument(nx_entry)
         _add_lauetof_sample_group(experiment_metadata, nx_entry)
         # Placeholder for ``monitor`` group
         _add_lauetof_monitor_group(experiment_metadata, nx_entry)
         # Skipping ``NXdata``(name) field with data link
-        # Add detector group metadata
-        for detector_metadata in detector_metadatas:
-            _add_lauetof_detector_group(detector_metadata, nx_instrument)
         # Add arbitrary metadata
         _add_arbitrary_metadata(nx_entry, **arbitrary_metadata)
 
 
-def _validate_existing_metadata(
-    dg: NMXReducedDataGroup,
-    detector_group: snx.Group,
-    sample_group: snx.Group,
-    safety_checks: bool = True,
+def _export_detector_metadata_as_nxlauetof(
+    *detector_metadatas: NMXDetectorMetadata,
+    output_file: str | pathlib.Path | io.BytesIO,
+    append_mode: bool = True,
 ) -> None:
-    flag = True
-    # check pixel size
-    flag = flag and sc.identical(dg["x_pixel_size"], detector_group["x_pixel_size"])
-    flag = flag and sc.identical(dg["y_pixel_size"], detector_group["y_pixel_size"])
-    # check sample name
-    flag = flag and dg["sample_name"].value == sample_group["name"]
+    """Export the detector specific metadata to a NeXus file.
 
-    if not flag and safety_checks:
-        raise ValueError(
-            f"Metadata for detector '{dg['detector_name'].value}' in the file "
-            "does not match the provided data."
-        )
-    elif not flag and not safety_checks:
-        warnings.warn(
-            UserWarning(
-                "Metadata for detector in the file does not match the provided data."
-                "This may lead to unexpected results."
-                "However, the operation will proceed as requested "
-                "since safety checks are disabled."
-            ),
-            stacklevel=2,
-        )
+    Since NMX can have arbitrary number of detectors,
+    this function can take multiple detector metadata objects.
+
+    Parameters
+    ----------
+    detector_metadatas:
+        Detector metadata objects.
+    output_file:
+        Output file path.
+
+    """
+
+    if not append_mode:
+        raise NotImplementedError("Only append mode is supported for now.")
+
+    with h5py.File(output_file, "r+") as f:
+        nx_entry = f["entry"]
+        if "instrument" not in nx_entry:
+            nx_instrument = _add_lauetof_instrument(f["entry"])
+        else:
+            nx_instrument = nx_entry["instrument"]
+        # Add detector group metadata
+        for detector_metadata in detector_metadatas:
+            _add_lauetof_detector_group(detector_metadata, nx_instrument)
 
 
-def export_reduced_data_as_nxlauetof(
+def _export_reduced_data_as_nxlauetof(
     dg: NMXReducedDataGroup,
     output_file: str | pathlib.Path | io.BytesIO,
     append_mode: bool = True,
-    safety_checks: bool = True,
 ) -> None:
     """Export the reduced data to a NeXus file with the LAUE_TOF application definition.
 
@@ -383,24 +386,6 @@ def export_reduced_data_as_nxlauetof(
     """
     if not append_mode:
         raise NotImplementedError("Only append mode is supported for now.")
-    detector_group_path = f"entry/instrument/{dg['detector_name'].value}"
-
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=UserWarning)
-        # Userwarning is expected here as histogram data is not yet saved.
-        with snx.File(output_file, "r") as f:
-            _validate_existing_metadata(
-                dg=dg,
-                detector_group=f[detector_group_path][()],
-                sample_group=f["entry/sample"][()],
-                safety_checks=safety_checks,
-            )
-
-    with h5py.File(output_file, "r+") as f:
-        nx_detector: h5py.Group = f[detector_group_path]
-
-    if not append_mode:
-        raise NotImplementedError("Only append mode is supported for now.")
 
     with h5py.File(output_file, "r+") as f:
         nx_detector: h5py.Group = f[f"entry/instrument/{dg['detector_name'].value}"]
@@ -420,3 +405,86 @@ def export_reduced_data_as_nxlauetof(
             root_entry=nx_detector,
             var=sc.midpoints(dg['counts'].coords['t'], dim='t'),
         )
+
+
+def _check_file(
+    filename: str | pathlib.Path | io.BytesIO, overwrite: bool
+) -> pathlib.Path | io.BytesIO:
+    if isinstance(filename, str | pathlib.Path):
+        filename = pathlib.Path(filename)
+        if filename.exists() and not overwrite:
+            raise FileExistsError(
+                f"File '{filename}' already exists. Use `overwrite=True` to overwrite."
+            )
+    return filename
+
+
+T = TypeVar("T", bound=sc.DataArray)
+
+
+class NXLauetofWriter:
+    def __init__(
+        self,
+        *,
+        output_filename: str | pathlib.Path | io.BytesIO,
+        workflow: sl.Pipeline,
+        chunk_generator: Callable[[FilePath, DetectorName], Generator[T, None, None]],
+        chunk_insert_key: type[T],
+        extra_meta: dict[str, sc.Variable] | None = None,
+        overwrite: bool = False,
+    ) -> None:
+        from ess.reduce.streaming import EternalAccumulator, StreamProcessor
+
+        from .types import FilePath, NMXReducedCounts
+
+        self._chunk_generator = chunk_generator
+        self._chunk_insert_key = chunk_insert_key
+        self._workflow = workflow
+        self._output_filename = _check_file(output_filename, overwrite)
+        self._input_filename = workflow.compute(FilePath)
+        self._final_stream_processor = partial(
+            StreamProcessor,
+            dynamic_keys=(chunk_insert_key,),
+            target_keys=(NMXReducedDataGroup,),
+            accumulators={NMXReducedCounts: EternalAccumulator},
+        )
+        self._detector_metas: dict[DetectorName, NMXDetectorMetadata] = {}
+        self._detector_reduced: dict[DetectorName, NMXReducedDataGroup] = {}
+        _export_static_metadata_as_nxlauetof(
+            experiment_metadata=self._workflow.compute(NMXExperimentMetadata),
+            output_file=self._output_filename,
+            **(extra_meta or {}),
+        )
+
+    def add_panel(self, *, detector_id: DetectorIndex | DetectorName) -> None:
+        from .types import PixelIds
+
+        temp_wf = self._workflow.copy()
+        if isinstance(detector_id, int):
+            temp_wf[DetectorIndex] = detector_id
+        elif isinstance(detector_id, str):
+            temp_wf[DetectorName] = detector_id
+        else:
+            raise TypeError(
+                f"Expected detector_id to be an int or str, got {type(detector_id)}"
+            )
+
+        _export_detector_metadata_as_nxlauetof(
+            temp_wf.compute(NMXDetectorMetadata),
+            output_file=self._output_filename,
+        )
+        # First compute static information
+        detector_name = temp_wf.compute(DetectorName)
+        temp_wf[PixelIds] = temp_wf.compute(PixelIds)
+        processor = self._final_stream_processor(temp_wf)
+        # Then iterate over the chunks
+        for da in self._chunk_generator(self._input_filename, detector_name):
+            if any(da.sizes.values()) == 0:
+                continue
+            else:
+                results = processor.add_chunk({self._chunk_insert_key: da})
+
+        _export_reduced_data_as_nxlauetof(
+            results[NMXReducedDataGroup], self._output_filename
+        )
+        return results[NMXReducedDataGroup]
