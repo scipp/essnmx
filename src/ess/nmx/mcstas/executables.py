@@ -24,7 +24,6 @@ from ..nexus import (
 )
 from ..streaming import calculate_number_of_chunks
 from ..types import (
-    CrystalRotation,
     DetectorIndex,
     DetectorName,
     FilePath,
@@ -265,8 +264,6 @@ def main() -> None:
         logger.addHandler(logging.StreamHandler(sys.stdout))
 
     wf = McStasWorkflow()
-    # Set the crystal rotation manually for now ...
-    wf[CrystalRotation] = sc.vector([0, 0, 0.0], unit='deg')
     reduction(
         input_file=input_file,
         output_file=output_file,
