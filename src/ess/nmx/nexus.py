@@ -182,6 +182,25 @@ def _add_lauetof_instrument(nx_entry: h5py.Group) -> h5py.Group:
     return nx_instrument
 
 
+def _add_lauetof_source_group(
+    dg: NMXExperimentMetadata, nx_instrument: h5py.Group
+) -> None:
+    nx_source = nx_instrument.create_group("source")
+    nx_source.attrs["NX_class"] = "NXsource"
+    _create_dataset_from_string(
+        root_entry=nx_source, name="name", var="European Spallation Source"
+    )
+    _create_dataset_from_string(root_entry=nx_source, name="short_name", var="ESS")
+    _create_dataset_from_string(
+        root_entry=nx_source, name="type", var="Spallation Neutron Source"
+    )
+    _create_dataset_from_var(
+        root_entry=nx_source, name="distance", var=sc.norm(dg["source_position"])
+    )
+    # Legacy probe information.
+    _create_dataset_from_string(root_entry=nx_source, name="probe", var="neutron")
+
+
 def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> None:
     nx_detector = nx_instrument.create_group(dg["detector_name"].value)  # Detector name
     nx_detector.attrs["NX_class"] = "NXdetector"
@@ -323,6 +342,8 @@ def _export_static_metadata_as_nxlauetof(
         nx_entry = _create_lauetof_data_entry(f)
         _add_lauetof_definition(nx_entry)
         _add_lauetof_sample_group(experiment_metadata, nx_entry)
+        nx_instrument = _add_lauetof_instrument(nx_entry)
+        _add_lauetof_source_group(experiment_metadata, nx_instrument)
         # Placeholder for ``monitor`` group
         _add_lauetof_monitor_group(experiment_metadata, nx_entry)
         # Skipping ``NXdata``(name) field with data link
