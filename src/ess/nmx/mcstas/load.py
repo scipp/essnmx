@@ -49,13 +49,11 @@ def load_event_data_bank_name(
 def _exclude_zero_events(data: sc.Variable) -> sc.Variable:
     """Exclude events with zero counts from the data.
 
-    McStas can add an extra event line containing 0,0,0,0,0,0
-    This line should not be included so we skip it.
+    McStas can add extra event lines containing 0,0,0,0,0,0
+    These lines should not be included so we skip it.
     """
-    if (data.values[0] == 0).all():
-        data = data["event", 1:]
-    else:
-        data = data
+    nonzeros = data.values[(data.values!=0).all(axis=1)]
+    data = sc.array(dims=['event', 'dim_1'], values=nonzeros, unit=None )
     return data
 
 
