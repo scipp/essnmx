@@ -52,7 +52,7 @@ def _exclude_zero_events(data: sc.Variable) -> sc.Variable:
     McStas can add extra event lines containing 0,0,0,0,0,0
     These lines should not be included so we skip it.
     """
-    data  = data[(data!=sc.scalar(0., unit=data.unit)).any(dim="dim_1")]
+    data = data[(data != sc.scalar(0.0, unit=data.unit)).any(dim="dim_1")]
     return data
 
 
