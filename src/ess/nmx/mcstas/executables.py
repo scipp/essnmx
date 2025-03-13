@@ -139,7 +139,7 @@ def reduction(
     input_file: pathlib.Path,
     output_file: pathlib.Path,
     chunk_size: int = 10_000_000,
-    detector_ids: list[int],
+    detector_ids: list[int | str],
     wf: sl.Pipeline | None = None,
     logger: logging.Logger | None = None,
 ) -> None:
@@ -229,7 +229,7 @@ def reduction(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="McStas Data Reduction.")
-    parser.add_argument("--input_file", type=str, help="Path to the input file")
+    parser.add_argument("--input_file", type=str, help="Path to the input file", required=True)
     parser.add_argument(
         "--output_file",
         type=str,
