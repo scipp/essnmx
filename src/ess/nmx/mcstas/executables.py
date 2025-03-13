@@ -229,7 +229,9 @@ def reduction(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="McStas Data Reduction.")
-    parser.add_argument("--input_file", type=str, help="Path to the input file", required=True)
+    parser.add_argument(
+        "--input_file", type=str, help="Path to the input file", required=True
+    )
     parser.add_argument(
         "--output_file",
         type=str,
