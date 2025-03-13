@@ -243,6 +243,12 @@ def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> 
 def _add_lauetof_sample_group(dg: NMXExperimentMetadata, nx_entry: h5py.Group) -> None:
     nx_sample = nx_entry.create_group("sample")
     nx_sample.attrs["NX_class"] = "NXsample"
+    _create_dataset_from_var(
+        root_entry=nx_sample,
+        var=dg['crystal_rotation'],
+        name='crystal_rotation',
+        long_name='crystal rotation in Phi (XYZ)',
+    )
     _create_dataset_from_string(
         root_entry=nx_sample,
         name='name',
