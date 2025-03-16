@@ -47,7 +47,7 @@ def _create_dataset_from_var(
     dataset = root_entry.create_dataset(
         name,
         data=var.values if dtype is None else var.values.astype(dtype, copy=False),
-        chunks = chunks,
+        chunks=chunks,
         **compression_options,
     )
     if var.unit is not None:
@@ -431,7 +431,7 @@ def _export_reduced_data_as_nxlauetof(
             name="data",
             root_entry=nx_detector,
             var=sc.fold(dg['counts'].data, dim='id', sizes={'x': num_x, 'y': num_y}),
-            chunks=(num_x,num_y,1),
+            chunks=(num_x, num_y, 1),
             dtype=np.uint,
         )
         data_dset.attrs["signal"] = 1
