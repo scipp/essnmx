@@ -7,6 +7,7 @@ from collections.abc import Callable, Generator
 from functools import partial
 from typing import Any, TypeVar
 
+import bitshuffle.h5
 import h5py
 import numpy as np
 import sciline as sl
@@ -34,6 +35,7 @@ def _create_dataset_from_var(
     long_name: str | None = None,
     compression: str | None = None,
     compression_opts: int | None = None,
+    chunks: tuple[int] | int | bool | None = None,
     dtype: Any = None,
 ) -> h5py.Dataset:
     compression_options = {}
@@ -45,6 +47,7 @@ def _create_dataset_from_var(
     dataset = root_entry.create_dataset(
         name,
         data=var.values if dtype is None else var.values.astype(dtype, copy=False),
+        chunks = chunks,
         **compression_options,
     )
     if var.unit is not None:
@@ -56,8 +59,8 @@ def _create_dataset_from_var(
 
 _create_compressed_dataset = partial(
     _create_dataset_from_var,
-    compression="gzip",
-    compression_opts=4,
+    compression=bitshuffle.h5.H5FILTER,
+    compression_opts=(0, bitshuffle.h5.H5_COMPRESS_LZ4),
 )
 
 
@@ -424,10 +427,11 @@ def _export_reduced_data_as_nxlauetof(
         # The actual application definition defines it as integer,
         # but we keep the original data type for now
         num_x, num_y = dg["detector_shape"].value  # Probably better way to do this
-        data_dset = _create_dataset_from_var(
+        data_dset = _create_compressed_dataset(
             name="data",
             root_entry=nx_detector,
             var=sc.fold(dg['counts'].data, dim='id', sizes={'x': num_x, 'y': num_y}),
+            chunks=(num_x,num_y,1),
             dtype=np.uint,
         )
         data_dset.attrs["signal"] = 1
