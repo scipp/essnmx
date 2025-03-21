@@ -140,6 +140,7 @@ def reduction(
     output_file: pathlib.Path,
     chunk_size: int = 10_000_000,
     detector_ids: list[int | str],
+    compression: bool = True,
     wf: sl.Pipeline | None = None,
     logger: logging.Logger | None = None,
 ) -> None:
@@ -224,7 +225,7 @@ def reduction(
         result = results[NMXReducedDataGroup]
         if logger is not None:
             logger.info("Appending reduced data into the output file %s", output_file)
-        _export_reduced_data_as_nxlauetof(result, output_file=output_file)
+        _export_reduced_data_as_nxlauetof(result, output_file=output_file, compress_counts=compression)
 
 
 def main() -> None:
@@ -254,6 +255,13 @@ def main() -> None:
         default=[0, 1, 2],
         help="Detector indices to process",
     )
+    parser.add_argument(
+        "--compression",
+        type=bool,
+        default=True,
+        help="Compress reduced output with bitshuffle/lz4",
+    )
+
 
     args = parser.parse_args()
 
@@ -271,6 +279,7 @@ def main() -> None:
         output_file=output_file,
         chunk_size=args.chunk_size,
         detector_ids=args.detector_ids,
+        compression=args.compression,
         logger=logger,
         wf=wf,
     )
