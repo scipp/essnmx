@@ -139,6 +139,7 @@ def _get_unpacked(stream_or_path: str | IO | bytes | os.PathLike):
         path = os.fspath(cast(str, stream_or_path))
         is_fspathlike = True
     except (TypeError, ValueError):
+        path = stream_or_path
         is_fspathlike = isinstance(stream_or_path, str)
 
     if is_fspathlike:
@@ -159,9 +160,9 @@ def loads(data: bytes, copy=False):
 
     Returns: See .load(stream_or_path)
     """
-    return load(BytesIO(data), copy)
+    return load_reflection_file(BytesIO(data), copy)
 
-def load(stream_or_path: IO | Path | os.PathLike, copy=False) -> dict:
+def load_reflection_file(stream_or_path: IO | Path | os.PathLike, copy=False) -> dict:
     """
     Load a DIALS msgpack-encoded .refl file
 
