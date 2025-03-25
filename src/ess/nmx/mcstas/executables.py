@@ -143,26 +143,42 @@ def reduction(
     compression: bool = True,
     wf: sl.Pipeline | None = None,
     logger: logging.Logger | None = None,
+    toa_min_max_prob: tuple[float] | None = None,
 ) -> None:
     wf = wf.copy() if wf is not None else McStasWorkflow()
     wf[FilePath] = input_file
     # Set static info
     wf[McStasInstrument] = wf.compute(McStasInstrument)
 
-    # Calculate parameters for data reduction
-    data_metadata = calculate_raw_data_metadata(
-        *detector_ids, wf=wf, logger=logger, chunk_size=chunk_size
-    )
-    if logger is not None:
-        logger.info("Metadata retrieved: %s", data_metadata)
+    if not toa_min_max_prob:
+        # Calculate parameters for data reduction
+        data_metadata = calculate_raw_data_metadata(
+            *detector_ids, wf=wf, logger=logger, chunk_size=chunk_size
+        )
+        if logger is not None:
+            logger.info("Metadata retrieved: %s", data_metadata)
 
-    toa_bin_edges = sc.linspace(
-        dim='t', start=data_metadata.min_toa, stop=data_metadata.max_toa, num=51
-    )
-    scale_factor = mcstas_weight_to_probability_scalefactor(
-        max_counts=wf.compute(MaximumCounts),
-        max_probability=data_metadata.max_probability,
-    )
+        toa_bin_edges = sc.linspace(
+            dim='t', start=data_metadata.min_toa, stop=data_metadata.max_toa, num=51
+        )
+        scale_factor = mcstas_weight_to_probability_scalefactor(
+            max_counts=wf.compute(MaximumCounts),
+            max_probability=data_metadata.max_probability,
+        )
+    else:
+        if logger is not None:
+            logger.info("Metadata given: %s", toa_min_max_prob)
+        toa_min = sc.scalar(toa_min_max_prob[0],unit='s')
+        toa_max = sc.scalar(toa_min_max_prob[1], unit='s')
+        prob_max = sc.scalar(toa_min_max_prob[2])
+        toa_bin_edges = sc.linspace(
+            dim='t', start=toa_min, stop=toa_max, num=51
+        )
+        scale_factor = mcstas_weight_to_probability_scalefactor(
+            max_counts=wf.compute(MaximumCounts),
+            max_probability=prob_max,
+        )
+
     # Compute metadata and make the skeleton output file
     experiment_metadata = wf.compute(NMXExperimentMetadata)
     detector_metas = []
@@ -190,6 +206,7 @@ def reduction(
     file_path = final_wf.compute(FilePath)
     final_stream_processor = _build_final_streaming_processor_helper()
     # Loop over the detectors
+    result_list = []
     for detector_i in detector_ids:
         temp_wf = final_wf.copy()
         if isinstance(detector_i, str):
@@ -223,9 +240,12 @@ def reduction(
                 )
 
         result = results[NMXReducedDataGroup]
+        result_list.append(result)
         if logger is not None:
             logger.info("Appending reduced data into the output file %s", output_file)
         _export_reduced_data_as_nxlauetof(result, output_file=output_file, compress_counts=compression)
+    from ess.nmx.reduction import merge_panels
+    return merge_panels(*result_list)
 
 
 def main() -> None:
