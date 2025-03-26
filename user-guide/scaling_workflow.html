@@ -1,0 +1,1597 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Scaling &#8212; ESSnmx</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=b935e646"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/scaling_workflow';</script>
+    <script src="../_static/anaconda-icon.js?v=461bdc62"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="Workflow - Chunk by Chunk" href="workflow_chunk.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="25.3.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.svg" class="logo__image only-light" alt="ESSnmx - Home"/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt="ESSnmx - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api-reference/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../developer/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about/index.html">
+    About
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://scipp.github.io/plopp">
+    Plopp
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://scipp.github.io/sciline">
+    Sciline
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://scipp.github.io">
+    Scipp
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-external" href="https://scipp.github.io/scippnexus">
+    ScippNexus
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/scipp/essnmx" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/essnmx/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://anaconda.org/scipp/essnmx" title="Conda" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-anaconda fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Conda</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api-reference/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../developer/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://scipp.github.io/plopp">
+    Plopp
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://scipp.github.io/sciline">
+    Sciline
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://scipp.github.io">
+    Scipp
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://scipp.github.io/scippnexus">
+    ScippNexus
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/scipp/essnmx" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/essnmx/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://anaconda.org/scipp/essnmx" title="Conda" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-anaconda fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Conda</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow_chunk.html">Workflow - Chunk by Chunk</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Scaling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+</div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#MTZ-IO">MTZ IO</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Build-Pipeline">Build Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Build-Workflow">Build Workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Compute-Desired-Type">Compute Desired Type</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Plots">Plots</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Estimated-Scaled-Intensities.">Estimated Scaled Intensities.</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Curve-Fitting">Curve Fitting</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Change-Provider">Change Provider</a></li>
+</ul>
+  </nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user-guide/scaling_workflow.ipynb"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Scaling</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="Scaling">
+<h1>Scaling<a class="headerlink" href="#Scaling" title="Link to this heading">#</a></h1>
+<section id="MTZ-IO">
+<h2>MTZ IO<a class="headerlink" href="#MTZ-IO" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ess.nmx</span></code> has <code class="docutils literal notranslate"><span class="pre">MTZ</span></code> IO helper functions. They can be used as providers in a workflow of scaling routine.</p>
+<p>They are wrapping <code class="docutils literal notranslate"><span class="pre">MTZ</span></code> IO functions of <code class="docutils literal notranslate"><span class="pre">gemmi</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gemmi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.mtz_io</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">read_mtz_file</span><span class="p">,</span>
+    <span class="n">mtz_to_pandas</span><span class="p">,</span>
+    <span class="n">MTZFilePath</span><span class="p">,</span>
+    <span class="n">get_unique_space_group</span><span class="p">,</span>
+    <span class="n">MtzDataFrame</span><span class="p">,</span>
+    <span class="n">merge_mtz_dataframes</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_small_random_mtz_samples</span>
+
+
+<span class="n">small_mtz_sample</span> <span class="o">=</span> <span class="n">get_small_random_mtz_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">mtz</span> <span class="o">=</span> <span class="n">read_mtz_file</span><span class="p">(</span><span class="n">MTZFilePath</span><span class="p">(</span><span class="n">small_mtz_sample</span><span class="p">))</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">mtz_to_pandas</span><span class="p">(</span><span class="n">mtz</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Downloading file &#39;mtz_random_samples.tar.gz&#39; from &#39;https://public.esss.dk/groups/scipp/ess/nmx/mtz_random_samples.tar.gz&#39; to &#39;/home/runner/.cache/essnmx/0&#39;.
+Untarring contents of &#39;/home/runner/.cache/essnmx/0/mtz_random_samples.tar.gz&#39; to &#39;/home/runner/.cache/essnmx/0/mtz_random_samples.tar.gz.untar&#39;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>I</th>
+      <th>SIGI</th>
+      <th>LAMBDA</th>
+      <th>H</th>
+      <th>K</th>
+      <th>L</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>124.962219</td>
+      <td>16.215948</td>
+      <td>3.199984</td>
+      <td>34.0</td>
+      <td>99.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>120.856743</td>
+      <td>14.550026</td>
+      <td>3.199915</td>
+      <td>-25.0</td>
+      <td>-24.0</td>
+      <td>71.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>119.300064</td>
+      <td>13.047421</td>
+      <td>3.199908</td>
+      <td>52.0</td>
+      <td>-84.0</td>
+      <td>63.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>117.497627</td>
+      <td>16.257229</td>
+      <td>3.199904</td>
+      <td>-36.0</td>
+      <td>93.0</td>
+      <td>18.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>114.670326</td>
+      <td>11.597502</td>
+      <td>3.199864</td>
+      <td>-96.0</td>
+      <td>51.0</td>
+      <td>-47.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Build-Pipeline">
+<h2>Build Pipeline<a class="headerlink" href="#Build-Pipeline" title="Link to this heading">#</a></h2>
+<p>Scaling routine includes:</p>
+<ul class="simple">
+<li><p>Reducing individual MTZ dataset</p></li>
+<li><p>Merging MTZ dataset</p></li>
+<li><p>Reducing merged MTZ dataset</p></li>
+</ul>
+<p>These operations are done on pandas dataframe as recommended in <code class="docutils literal notranslate"><span class="pre">gemmi</span></code>. And multiple MTZ files are expected, so we need to use <code class="docutils literal notranslate"><span class="pre">sciline.ParamTable</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sciline</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.mtz_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">providers</span> <span class="k">as</span> <span class="n">mtz_io_providers</span><span class="p">,</span> <span class="n">default_parameters</span> <span class="k">as</span> <span class="n">mtz_io_params</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.mtz_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpaceGroupDesc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.scaling</span><span class="w"> </span><span class="kn">import</span> <span class="n">providers</span> <span class="k">as</span> <span class="n">scaling_providers</span><span class="p">,</span> <span class="n">default_parameters</span> <span class="k">as</span> <span class="n">scaling_params</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.scaling</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">WavelengthBins</span><span class="p">,</span>
+    <span class="n">FilteredEstimatedScaledIntensities</span><span class="p">,</span>
+    <span class="n">ReferenceWavelength</span><span class="p">,</span>
+    <span class="n">ScaledIntensityLeftTailThreshold</span><span class="p">,</span>
+    <span class="n">ScaledIntensityRightTailThreshold</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">pl</span> <span class="o">=</span> <span class="n">sl</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+    <span class="n">providers</span><span class="o">=</span><span class="n">mtz_io_providers</span> <span class="o">+</span> <span class="n">scaling_providers</span><span class="p">,</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">SpaceGroupDesc</span><span class="p">:</span> <span class="s2">&quot;C 1 2 1&quot;</span><span class="p">,</span>
+        <span class="n">ReferenceWavelength</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">sc</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">angstrom</span>
+        <span class="p">),</span>  <span class="c1"># Remove it if you want to use the middle of the bin</span>
+        <span class="n">ScaledIntensityLeftTailThreshold</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span>
+            <span class="mf">0.1</span><span class="p">,</span>  <span class="c1"># Increase it to remove more outliers</span>
+        <span class="p">),</span>
+        <span class="n">ScaledIntensityRightTailThreshold</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span>
+            <span class="mf">4.0</span><span class="p">,</span>  <span class="c1"># Decrease it to remove more outliers</span>
+        <span class="p">),</span>
+        <span class="o">**</span><span class="n">mtz_io_params</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">scaling_params</span><span class="p">,</span>
+        <span class="n">WavelengthBins</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="n">pl</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div class="pipeline-html-repr">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Value</th>
+            <th scope="col">Source</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        <tr>
+          <td scope="row">EstimatedScaleFactor</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>estimate_scale_factor_per_hkl_asu_from_reference</summary>
+      ess.nmx.scaling.estimate_scale_factor_per_hkl_asu_from_reference
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">EstimatedScaledIntensities</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>average_roughly_scaled_intensities</summary>
+      ess.nmx.scaling.average_roughly_scaled_intensities
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">FilteredEstimatedScaledIntensities</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>cut_tails</summary>
+      ess.nmx.scaling.cut_tails
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">FittingResult</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>fit_wavelength_scale_factor_polynomial</summary>
+      ess.nmx.scaling.fit_wavelength_scale_factor_polynomial
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">IntensityColumnName</td>
+          <td scope="row">I</td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">MTZFilePath</td>
+          <td scope="row"></td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">Mtz</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>read_mtz_file</summary>
+      ess.nmx.mtz_io.read_mtz_file
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">MtzDataFrame</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>process_single_mtz_to_dataframe</summary>
+      ess.nmx.mtz_io.process_single_mtz_to_dataframe
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">NMXMtzDataArray</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>nmx_mtz_dataframe_to_scipp_dataarray</summary>
+      ess.nmx.mtz_io.nmx_mtz_dataframe_to_scipp_dataarray
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">NMXMtzDataFrame</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>process_mtz_dataframe</summary>
+      ess.nmx.mtz_io.process_mtz_dataframe
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">ReciprocalAsu</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>get_reciprocal_asu</summary>
+      ess.nmx.mtz_io.get_reciprocal_asu
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">ReferenceIntensities</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>get_reference_intensities</summary>
+      ess.nmx.scaling.get_reference_intensities
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">ReferenceWavelength</td>
+          <td scope="row">
+    <details>
+      <summary>&lt;scipp.Variable&gt; ()     ...</summary>
+      &lt;scipp.Variable&gt; ()      int64             [Å]  3
+    </details>
+    </td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">ScaledIntensityLeftTailThreshold</td>
+          <td scope="row">
+    <details>
+      <summary>&lt;scipp.Variable&gt; ()    f...</summary>
+      &lt;scipp.Variable&gt; ()    float64  [dimensionless]  0.1
+    </details>
+    </td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">ScaledIntensityRightTailThreshold</td>
+          <td scope="row">
+    <details>
+      <summary>&lt;scipp.Variable&gt; ()    f...</summary>
+      &lt;scipp.Variable&gt; ()    float64  [dimensionless]  2
+    </details>
+    </td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">SelectedReferenceWavelength</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>get_reference_wavelength</summary>
+      ess.nmx.scaling.get_reference_wavelength
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">SpaceGroup</td>
+          <td scope="row"></td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">SpaceGroup | NoneType</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>get_space_group_from_mtz</summary>
+      ess.nmx.mtz_io.get_space_group_from_mtz
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">SpaceGroupDesc</td>
+          <td scope="row">C 1 2 1</td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">StdDevColumnName</td>
+          <td scope="row">SIGI</td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">WavelengthBinned</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>get_wavelength_binned</summary>
+      ess.nmx.scaling.get_wavelength_binned
+    </details>
+    </th>
+        </tr>
+
+        <tr>
+          <td scope="row">WavelengthBins</td>
+          <td scope="row">250</td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">WavelengthColumnName</td>
+          <td scope="row">LAMBDA</td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">WavelengthFittingPolynomialDegree</td>
+          <td scope="row">7</td>
+          <td scope="row"></th>
+        </tr>
+
+        <tr>
+          <td scope="row">WavelengthScaleFactors</td>
+          <td scope="row"></td>
+          <td scope="row">
+    <details>
+      <summary>calculate_wavelength_scale_factor</summary>
+      ess.nmx.scaling.calculate_wavelength_scale_factor
+    </details>
+    </th>
+        </tr>
+        </tbody>
+      </table>
+    </div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file_paths</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="n">MTZFilePath</span><span class="p">:</span> <span class="n">get_small_random_mtz_samples</span><span class="p">()})</span><span class="o">.</span><span class="n">rename_axis</span><span class="p">(</span>
+    <span class="s2">&quot;mtzfile&quot;</span>
+<span class="p">)</span>
+<span class="n">mapped</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">file_paths</span><span class="p">)</span>
+<span class="n">pl</span><span class="p">[</span><span class="n">gemmi</span><span class="o">.</span><span class="n">SpaceGroup</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapped</span><span class="p">[</span><span class="n">gemmi</span><span class="o">.</span><span class="n">SpaceGroup</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+    <span class="n">index</span><span class="o">=</span><span class="s1">&#39;mtzfile&#39;</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">get_unique_space_group</span>
+<span class="p">)</span>
+<span class="n">pl</span><span class="p">[</span><span class="n">MtzDataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapped</span><span class="p">[</span><span class="n">MtzDataFrame</span><span class="p">]</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+    <span class="n">index</span><span class="o">=</span><span class="s1">&#39;mtzfile&#39;</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">merge_mtz_dataframes</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Build-Workflow">
+<h2>Build Workflow<a class="headerlink" href="#Build-Workflow" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.scaling</span><span class="w"> </span><span class="kn">import</span> <span class="n">WavelengthScaleFactors</span>
+
+<span class="n">scaling_nmx_workflow</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">WavelengthScaleFactors</span><span class="p">)</span>
+<span class="n">scaling_nmx_workflow</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">graph_attr</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;rankdir&quot;</span><span class="p">:</span> <span class="s2">&quot;LR&quot;</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/user-guide_scaling_workflow_7_0.svg" src="../_images/user-guide_scaling_workflow_7_0.svg" />
+</div>
+</div>
+</section>
+<section id="Compute-Desired-Type">
+<h2>Compute Desired Type<a class="headerlink" href="#Compute-Desired-Type" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.scaling</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SelectedReferenceWavelength</span><span class="p">,</span>
+    <span class="n">FittingResult</span><span class="p">,</span>
+    <span class="n">WavelengthScaleFactors</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">scaling_nmx_workflow</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+    <span class="p">(</span>
+        <span class="n">FilteredEstimatedScaledIntensities</span><span class="p">,</span>
+        <span class="n">SelectedReferenceWavelength</span><span class="p">,</span>
+        <span class="n">FittingResult</span><span class="p">,</span>
+        <span class="n">WavelengthScaleFactors</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">results</span><span class="p">[</span><span class="n">WavelengthScaleFactors</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div><!-- Original source from -->
+<!-- https://github.com/jsignell/xarray/blob/1d960933ab252e0f79f7e050e6c9261d55568057/xarray/static/html/icons-svg-inline.html -->
+<svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+<defs>
+<symbol id="icon-database" viewBox="0 0 32 32">
+<title>Show/Hide data repr</title>
+<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
+<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+</symbol>
+<symbol id="icon-file-text2" viewBox="0 0 32 32">
+<title>Show/Hide attributes</title>
+<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
+<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+</symbol>
+</defs>
+</svg><style id="scipp-style-sheet">.sc-root{--sc-background-color0:var(--jp-layout-color0,#fff);--sc-background-color1:var(--jp-layout-color1,#fcfcfc);--sc-background-color2:var(--jp-layout-color2,#efefef);--sc-inverse-background-color0:var(--jp-inverse-layout-color4,#111);--sc-font-color0:var(--jp-content-font-color0,#000);--sc-font-color1:var(--jp-content-font-color1,#555);--sc-font-color2:var(--jp-content-font-color2,#888);--sc-font-color3:var(--jp-content-font-color3,#ccc);}body.vscode-dark .sc-root{--sc-font-color0:rgba(255,255,255,1);--sc-font-color1:rgba(255,255,255,0.70);--sc-font-color2:rgba(255,255,255,0.54);--sc-font-color3:rgba(255,255,255,0.38);--sc-border-color:#1F1F1F;--sc-disabled-color:#515151;--sc-background-color0:#111111;--sc-background-color1:#111111;--sc-background-color2:#313131;}.sc-wrap{font-size:14px;min-width:300px;max-width:800px;}.sc-var-attrs .sc-wrap{padding-left:3em;}.sc-header{padding-top:6px;padding-bottom:6px;margin-bottom:4px;border-bottom:solid 1px #ddd;}.sc-header > div,.sc-header > ul{display:inline;margin-top:0;margin-bottom:0;}.sc-obj-type,.sc-array-name{margin-left:2px;margin-right:10px;}.sc-obj-type{color:var(--sc-font-color1);}.sc-underlying-size{color:var(--sc-font-color2);}.sc-sections,.reveal .sc-sections{padding-left:0 !important;display:grid;grid-template-columns:150px auto auto auto 1fr 20px 20px;}.sc-section-item{display:contents;}.sc-section-item input{display:none;}.sc-section-item input:enabled + label{cursor:pointer;color:var(--sc-font-color1);}.sc-section-item input:enabled + label:hover{color:var(--sc-font-color0);}.sc-section-summary{grid-column:1;font-weight:500;}.sc-section-summary > span{display:inline-block;padding-left:0.5em;}.sc-section-summary-in:disabled + label{color:var(--sc-font-color1);}.sc-section-summary-in + label:before{display:inline-block;content:'►';font-size:11px;width:15px;text-align:center;}.sc-section-summary-in:disabled + label:before{color:var(--sc-font-color3);}.sc-section-summary-in:checked + label:before{content:'▼';}.sc-section-summary-in:checked + label > span{display:none;}.sc-section-summary,.sc-section-inline-details{padding-top:4px;padding-bottom:4px;}.sc-section-inline-details{grid-column:2 / 6;}.sc-section-details{display:none;grid-column:1 / -1;margin-bottom:5px;}.sc-section-summary-in:checked ~ .sc-section-details{display:contents;}.sc-array-wrap{grid-column:1 / -1;display:grid;grid-template-columns:20px auto;}.sc-array-wrap > label{grid-column:1;vertical-align:top;}.sc-preview{color:var(--sc-font-color2);}.sc-array-preview,.sc-array-data{padding:0 5px !important;grid-column:2;}.sc-array-data,.sc-array-in:checked ~ .sc-array-preview{display:none;}.sc-array-in:checked ~ .sc-array-data,.sc-array-preview{display:inline-block;}.sc-dim-list{display:inline-block !important;list-style:none;padding:0 !important;margin:0;}.sc-dim-list li{display:inline-block;padding:0;margin:0!important;}.sc-dim-list:before{content:'(';}.sc-dim-list:after{content:')';}.sc-dim-list li:not(:last-child):after{content:',';padding-right:5px;}.sc-dim-list li span,.sc-standalone-var-name > span span,.sc-var-name > span span{padding:0 !important;}.sc-aligned{font-weight:bold;}.sc-var-list,.sc-var-item,.reveal .sc-var-list,.reveal .sc-var-item{display:contents;}.sc-var-item > div,.sc-var-item label,.sc-var-item > .sc-var-name span{background-color:var(--sc-background-color1);margin-bottom:0;}.sc-var-item > .sc-var-name:hover span{padding-right:5px;}.sc-var-list > li:nth-child(odd) > div,.sc-var-list > li:nth-child(odd) > label,.sc-var-list > li:nth-child(odd) > .sc-var-name span{background-color:var(--sc-background-color2);}.sc-var-name{grid-column:1;}.sc-var-dims{grid-column:2;}.sc-var-dtype{grid-column:3;text-align:right;color:var(--sc-font-color2);}.sc-var-unit{grid-column:4;text-align:left;color:var(--sc-font-color1);max-width:50pt;text-overflow:ellipsis;}.sc-value-preview{grid-column:5;}.sc-var-preview-variances{text-align:right;}.sc-sections .sc-section-item .sc-section-summary,.sc-sections .sc-section-item .sc-section-inline-details,.sc-section-item .sc-var-list .sc-var-item > div,.sc-section-item .sc-var-list .sc-var-item > label,.sc-section-details .sc-var-list .sc-var-item > div,.sc-section-details .sc-var-list .sc-var-item > label{margin-top:0;margin-bottom:0;}.sc-var-name,.sc-var-dims,.sc-var-dtype,.sc-var-unit,.sc-preview,.sc-attrs dt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px;}.sc-var-name:hover,.sc-var-dims:hover,.sc-var-dtype:hover,.sc-var-unit:hover,.sc-attrs dt:hover{overflow:visible;width:auto;z-index:1;}.sc-var-attrs{display:block;}.sc-var-data,.reveal .sc-var-data{display:none;}.sc-var-attrs,.sc-var-data{background-color:var(--sc-background-color0) !important;padding-bottom:5px !important;}.sc-var-attrs-in:checked ~ .sc-var-attrs{display:none;}.sc-var-data-in:checked ~ .sc-var-data{display:block;}.sc-var-data > table{float:right;}.sc-var-name span,.sc-var-data{padding-left:25px !important;}.sc-var-attrs,.sc-var-data{grid-column:1 / -1;}dl.sc-attrs{padding:0;margin:0;display:grid;grid-template-columns:125px auto;}.sc-attrs dt,dd{padding:0;margin:0;float:left;padding-right:10px;width:auto;}.sc-attrs dt{font-weight:normal;grid-column:1;}.sc-attrs dt:hover span{display:inline-block;padding-right:10px;}.sc-attrs dd{grid-column:2;white-space:pre-wrap;word-break:break-all;}.sc-icon-database,.sc-icon-file-text2{display:inline-block;vertical-align:middle;width:1em;height:1.5em !important;stroke-width:0;stroke:currentColor;fill:currentColor;}label.sc-hide-icon svg{opacity:0;}.sc-standalone-var-name{grid-column:1/3;}.sc-standalone-var-name span{padding-left:25px;padding-right:10px;}.sc-title{font-weight:bold;font-size:1.5em;}.sc-subtitle{font-weight:normal;font-style:italic;text-align:left;font-size:1.2em;padding:1px;}.sc-label{fill:var(--sc-font-color0,#444444);text-anchor:middle;}.sc-name{fill:var(--sc-font-color0,#111111);}.sc-inset-line{stroke:var(--sc-font-color1);stroke-width:0.05;stroke-dasharray:0.2,0.2;}.sc-log-wrap{height:25ex;resize:vertical;overflow-y:scroll;display:flex;flex-direction:column-reverse;border:1px solid;border-color:var(--jp-border-color2);background-color:var(--sc-background-color1);}div.sc-log{line-height:2.5ex;}table.sc-log{table-layout:auto;border-collapse:collapse;}tr.sc-log:nth-child(even){background-color:var(--sc-background-color0);}tr.sc-log > td{vertical-align:top;padding-bottom:0.5ex;}.sc-log-time-stamp{min-width:22ch;font-family:var(--jp-code-font-family);color:var(--sc-font-color2);}.sc-log-level{min-width:10ch;}tr.sc-log-debug td.sc-log-level{color:var(--jp-accent-color1);}tr.sc-log-info td.sc-log-level{color:var(--jp-info-color1);}tr.sc-log-warning td.sc-log-level{color:var(--jp-warn-color1);}tr.sc-log-error td.sc-log-level{font-weight:bold;color:var(--jp-error-color2);}tr.sc-log-critical td.sc-log-level{font-weight:bold;color:var(--sc-background-color0);background-color:var(--jp-error-color1);}.sc-log-message{white-space:pre-wrap;width:100%;}.sc-log-html-payload{white-space:normal;}.sc-log-name{padding-right:0.5em;text-align:right;white-space:pre-wrap;color:var(--sc-font-color3);}</style><div class='sc-wrap sc-root'><div class='sc-header'><div class='sc-obj-type'>scipp.DataArray (4.70 KB)</div></div><ul class='sc-sections'><li class='sc-section-item'><input id='section-996ee2c2-f576-43b6-826b-8454fe57c9a4' class='sc-section-summary-in' type='checkbox' disabled ><label for='section-996ee2c2-f576-43b6-826b-8454fe57c9a4' class='sc-section-summary' >Dimensions:</label><div class='sc-section-inline-details'><ul class='sc-dim-list'><li><span class='sc-has-index'>wavelength</span>: 247</li></ul></div><div class='sc-section-details'></div></li><li class='sc-section-item'><input id='section-5c651757-bbc9-4f14-bfe0-31e83afde687' class='sc-section-summary-in' type='checkbox'  checked><label for='section-5c651757-bbc9-4f14-bfe0-31e83afde687' class='sc-section-summary'  title='Expand/collapse section'>Coordinates: <span>(1)</span></label><div class='sc-section-inline-details'></div><div class='sc-section-details'><ul class='sc-var-list'><li class='sc-var-item'><div class='sc-var-name'><span class='sc-aligned'>wavelength</span></div><div class='sc-var-dims'>(wavelength)</div><div class='sc-var-dtype'>float64</div><div class='sc-var-unit'>Å</div><div class='sc-value-preview sc-preview'><span><div>2.801, 2.804, ..., 3.194, 3.196</div></span></div><input id='attrs-bd9b4a23-af60-46c2-8751-d7a3eb18b92f' class='sc-var-attrs-in' type='checkbox' disabled><label for='attrs-bd9b4a23-af60-46c2-8751-d7a3eb18b92f' class='sc-hide-icon' title='Show/Hide attributes'><svg class='icon sc-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-8d3bb5c8-9991-49b3-bb10-0b106eb73e2d' class='sc-var-data-in' type='checkbox'><label for='data-8d3bb5c8-9991-49b3-bb10-0b106eb73e2d' title='Show/Hide data repr'><svg class='icon sc-icon-database'><use xlink:href='#icon-database'></use></svg></label><pre class='sc-var-data'>Values:<br>array([2.80126774, 2.80446398, 2.80606211, 2.80766023, 2.80925835,
+       2.81085647, 2.81245459, 2.81405271, 2.81565083, 2.81724895,
+       2.81884707, 2.82044519, 2.82204331, 2.82364143, 2.82523955,
+       2.82683767, 2.8284358 , 2.83003392, 2.83163204, 2.83323016,
+       2.83482828, 2.8364264 , 2.83802452, 2.83962264, 2.84122076,
+       2.84281888, 2.844417  , 2.84601512, 2.84761324, 2.84921136,
+       2.85080948, 2.85240761, 2.85400573, 2.85560385, 2.85720197,
+       2.85880009, 2.86039821, 2.86199633, 2.86359445, 2.86519257,
+       2.86679069, 2.86838881, 2.86998693, 2.87158505, 2.87318317,
+       2.8747813 , 2.87637942, 2.87797754, 2.87957566, 2.88117378,
+       2.8827719 , 2.88437002, 2.88596814, 2.88756626, 2.88916438,
+       2.8907625 , 2.89236062, 2.89395874, 2.89555686, 2.89715498,
+       2.89875311, 2.90035123, 2.90194935, 2.90354747, 2.90514559,
+       2.90674371, 2.90834183, 2.90993995, 2.91153807, 2.91313619,
+       2.91473431, 2.91633243, 2.91793055, 2.91952867, 2.9211268 ,
+       2.92272492, 2.92432304, 2.92592116, 2.92751928, 2.9291174 ,
+       2.93071552, 2.93231364, 2.93391176, 2.93550988, 2.937108  ,
+       2.93870612, 2.94030424, 2.94190236, 2.94350048, 2.94509861,
+       2.94669673, 2.94829485, 2.94989297, 2.95149109, 2.95308921,
+       2.95468733, 2.95628545, 2.95788357, 2.95948169, 2.96107981,
+       2.96267793, 2.96427605, 2.96587417, 2.9674723 , 2.96907042,
+       2.97066854, 2.97226666, 2.97386478, 2.9754629 , 2.97706102,
+       2.97865914, 2.98025726, 2.98185538, 2.9834535 , 2.98505162,
+       2.98664974, 2.98824786, 2.98984598, 2.99144411, 2.99304223,
+       2.99464035, 2.99623847, 2.99783659, 2.99943471, 3.00103283,
+       3.00263095, 3.00422907, 3.00582719, 3.00742531, 3.00902343,
+       3.01062155, 3.01221967, 3.0138178 , 3.01541592, 3.01701404,
+       3.01861216, 3.02021028, 3.0218084 , 3.02340652, 3.02500464,
+       3.02660276, 3.02820088, 3.029799  , 3.03139712, 3.03299524,
+       3.03459336, 3.03619148, 3.03778961, 3.03938773, 3.04098585,
+       3.04258397, 3.04418209, 3.04578021, 3.04737833, 3.04897645,
+       3.05057457, 3.05217269, 3.05377081, 3.05536893, 3.05696705,
+       3.05856517, 3.0601633 , 3.06176142, 3.06335954, 3.06495766,
+       3.06655578, 3.0681539 , 3.06975202, 3.07135014, 3.07294826,
+       3.07454638, 3.0761445 , 3.07774262, 3.07934074, 3.08093886,
+       3.08253698, 3.08413511, 3.08573323, 3.08733135, 3.08892947,
+       3.09052759, 3.09212571, 3.09372383, 3.09532195, 3.09692007,
+       3.09851819, 3.10011631, 3.10171443, 3.10331255, 3.10491067,
+       3.1065088 , 3.10810692, 3.10970504, 3.11130316, 3.11290128,
+       3.1144994 , 3.11609752, 3.11769564, 3.11929376, 3.12089188,
+       3.12249   , 3.12408812, 3.12568624, 3.12728436, 3.12888248,
+       3.13048061, 3.13207873, 3.13367685, 3.13527497, 3.13687309,
+       3.13847121, 3.14006933, 3.14166745, 3.14326557, 3.14486369,
+       3.14646181, 3.14805993, 3.14965805, 3.15125617, 3.1528543 ,
+       3.15445242, 3.15605054, 3.15764866, 3.15924678, 3.1608449 ,
+       3.16244302, 3.16404114, 3.16563926, 3.16723738, 3.1688355 ,
+       3.17043362, 3.17203174, 3.17362986, 3.17522798, 3.17682611,
+       3.17842423, 3.18002235, 3.18162047, 3.18321859, 3.18481671,
+       3.18641483, 3.18801295, 3.18961107, 3.19120919, 3.19280731,
+       3.19440543, 3.19600355])</pre></span></li></ul></div></li><li class='sc-section-item'><input id='section-0a3f62e7-f8dd-4785-9964-c77da444a0ee' class='sc-section-summary-in' type='checkbox'  checked><label for='section-0a3f62e7-f8dd-4785-9964-c77da444a0ee' class='sc-section-summary'  title='Expand/collapse section'>Data: <span>(1)</span></label><div class='sc-section-inline-details'></div><div class='sc-section-details'><ul class='sc-var-list'><li class='sc-var-item'><div class='sc-var-name'><span></span></div><div class='sc-var-dims'>(wavelength)</div><div class='sc-var-dtype'>float64</div><div class='sc-var-unit'>𝟙</div><div class='sc-value-preview sc-preview'><span><div>0.113, 0.158, ..., 1.841, 1.863</div></span></div><input id='attrs-102c4606-7f9f-4452-88ff-5be1e90fc8de' class='sc-var-attrs-in' type='checkbox' disabled><label for='attrs-102c4606-7f9f-4452-88ff-5be1e90fc8de' class='sc-hide-icon' title='Show/Hide attributes'><svg class='icon sc-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-be68da56-6d22-482d-ba42-b9aa4946f6fc' class='sc-var-data-in' type='checkbox'><label for='data-be68da56-6d22-482d-ba42-b9aa4946f6fc' title='Show/Hide data repr'><svg class='icon sc-icon-database'><use xlink:href='#icon-database'></use></svg></label><pre class='sc-var-data'>Values:<br>array([0.11293644, 0.15786471, 0.17927499, 0.20000795, 0.22008209,
+       0.23951563, 0.25832648, 0.27653223, 0.29415019, 0.31119733,
+       0.32769036, 0.34364567, 0.35907935, 0.37400721, 0.38844477,
+       0.40240726, 0.4159096 , 0.42896648, 0.44159225, 0.45380101,
+       0.4656066 , 0.47702255, 0.48806214, 0.49873837, 0.50906399,
+       0.51905147, 0.52871301, 0.53806057, 0.54710585, 0.55586028,
+       0.56433505, 0.5725411 , 0.5804891 , 0.58818952, 0.59565253,
+       0.60288811, 0.60990598, 0.61671561, 0.62332626, 0.62974696,
+       0.63598648, 0.6420534 , 0.64795606, 0.65370259, 0.65930087,
+       0.66475861, 0.67008326, 0.6752821 , 0.68036218, 0.68533034,
+       0.69019323, 0.69495728, 0.69962874, 0.70421366, 0.70871789,
+       0.71314708, 0.71750672, 0.72180208, 0.72603828, 0.73022023,
+       0.73435268, 0.73844019, 0.74248715, 0.7464978 , 0.75047617,
+       0.75442617, 0.75835151, 0.76225577, 0.76614234, 0.77001448,
+       0.77387528, 0.7777277 , 0.78157452, 0.78541841, 0.78926188,
+       0.7931073 , 0.7969569 , 0.80081278, 0.80467692, 0.80855114,
+       0.81243716, 0.81633656, 0.82025081, 0.82418126, 0.82812914,
+       0.83209556, 0.83608152, 0.84008793, 0.84411558, 0.84816514,
+       0.85223722, 0.85633229, 0.86045076, 0.86459293, 0.86875901,
+       0.87294912, 0.87716331, 0.88140154, 0.88566369, 0.88994956,
+       0.89425889, 0.89859134, 0.9029465 , 0.9073239 , 0.91172301,
+       0.91614323, 0.92058391, 0.92504434, 0.92952378, 0.93402141,
+       0.93853638, 0.9430678 , 0.94761474, 0.95217621, 0.95675123,
+       0.96133874, 0.96593767, 0.97054694, 0.97516542, 0.97979198,
+       0.98442546, 0.98906468, 0.99370847, 0.99835562, 1.00300493,
+       1.00765521, 1.01230524, 1.01695382, 1.02159975, 1.02624184,
+       1.0308789 , 1.03550978, 1.0401333 , 1.04474835, 1.04935381,
+       1.05394859, 1.05853163, 1.06310191, 1.06765843, 1.07220022,
+       1.07672637, 1.081236  , 1.08572828, 1.09020242, 1.09465769,
+       1.0990934 , 1.10350893, 1.10790372, 1.11227727, 1.11662913,
+       1.12095895, 1.12526641, 1.12955131, 1.13381349, 1.13805289,
+       1.14226953, 1.14646352, 1.15063504, 1.15478438, 1.15891193,
+       1.16301816, 1.16710365, 1.17116909, 1.17521527, 1.1792431 ,
+       1.18325357, 1.18724784, 1.19122714, 1.19519285, 1.19914647,
+       1.20308963, 1.20702408, 1.21095171, 1.21487455, 1.21879478,
+       1.22271471, 1.22663679, 1.23056364, 1.23449802, 1.23844286,
+       1.24240122, 1.24637634, 1.25037164, 1.25439068, 1.25843722,
+       1.26251516, 1.2666286 , 1.27078183, 1.27497931, 1.27922567,
+       1.28352576, 1.28788462, 1.29230746, 1.29679972, 1.30136702,
+       1.30601521, 1.31075032, 1.31557861, 1.32050655, 1.32554084,
+       1.33068839, 1.33595632, 1.34135201, 1.34688306, 1.35255729,
+       1.35838276, 1.3643678 , 1.37052095, 1.37685101, 1.38336703,
+       1.39007831, 1.39699442, 1.40412517, 1.41148066, 1.41907122,
+       1.42690748, 1.43500034, 1.44336096, 1.45200079, 1.46093156,
+       1.4701653 , 1.4797143 , 1.48959117, 1.49980881, 1.51038041,
+       1.52131946, 1.53263978, 1.54435546, 1.55648095, 1.56903097,
+       1.58202059, 1.59546519, 1.60938047, 1.62378248, 1.63868758,
+       1.65411248, 1.67007421, 1.68659017, 1.70367808, 1.72135603,
+       1.73964245, 1.75855613, 1.77811621, 1.7983422 , 1.81925398,
+       1.8408718 , 1.86321627])</pre></li></ul></div></li></ul></div></div></div>
+</div>
+</section>
+<section id="Plots">
+<h2>Plots<a class="headerlink" href="#Plots" title="Link to this heading">#</a></h2>
+<p>Here are plotting examples of the fitting/estimation results.</p>
+<section id="Estimated-Scaled-Intensities.">
+<h3>Estimated Scaled Intensities.<a class="headerlink" href="#Estimated-Scaled-Intensities." title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">density_ax</span><span class="p">,</span> <span class="n">prob_ax</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">densities</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="n">FilteredEstimatedScaledIntensities</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="n">FilteredEstimatedScaledIntensities</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">intensity</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Filtered Estimated Scaled Intensities</span><span class="se">\n</span><span class="s2">Density Plot&quot;</span><span class="p">,</span>
+    <span class="n">grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">density_ax</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">stats</span><span class="o">.</span><span class="n">probplot</span><span class="p">(</span><span class="n">densities</span><span class="p">,</span> <span class="n">dist</span><span class="o">=</span><span class="s2">&quot;norm&quot;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">prob_ax</span><span class="p">)</span>
+<span class="n">prob_ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Filtered Estimated Scaled Intensities</span><span class="se">\n</span><span class="s2">Probability Plot&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0.5, 1.0, &#39;Filtered Estimated Scaled Intensities\nProbability Plot&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/user-guide_scaling_workflow_11_1.png" src="../_images/user-guide_scaling_workflow_11_1.png" />
+</div>
+</div>
+</section>
+<section id="Curve-Fitting">
+<h3>Curve Fitting<a class="headerlink" href="#Curve-Fitting" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">plopp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.scaling</span><span class="w"> </span><span class="kn">import</span> <span class="n">FittingResult</span>
+
+<span class="n">chebyshev_func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">chebyshev</span><span class="o">.</span><span class="n">Chebyshev</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+<span class="n">scale_function</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span>
+    <span class="n">chebyshev_func</span> <span class="o">/</span> <span class="n">chebyshev_func</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="n">SelectedReferenceWavelength</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;Original Data&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="n">FilteredEstimatedScaledIntensities</span><span class="p">],</span>
+        <span class="s2">&quot;Fit Result&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="n">FittingResult</span><span class="p">]</span><span class="o">.</span><span class="n">fit_output</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Fit Result [Intensities vs Wavelength]&quot;</span><span class="p">,</span>
+    <span class="n">marker</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Chebyshev&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Fit Result&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="n">linestyle</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Chebyshev&quot;</span><span class="p">:</span> <span class="s2">&quot;solid&quot;</span><span class="p">,</span> <span class="s2">&quot;Fit Result&quot;</span><span class="p">:</span> <span class="s2">&quot;solid&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/user-guide_scaling_workflow_13_0.svg" src="../_images/user-guide_scaling_workflow_13_0.svg" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reference_wavelength</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">sc</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">WavelengthScaleFactors</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">WavelengthScaleFactors</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;wavelength&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">coords</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;wavelength&quot;</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">SelectedReferenceWavelength</span><span class="p">],</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;wavelength&quot;</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="n">wavelength_scale_factor_plot</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;scale_factor&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="n">WavelengthScaleFactors</span><span class="p">],</span>
+        <span class="s2">&quot;reference_wavelength&quot;</span><span class="p">:</span> <span class="n">reference_wavelength</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Wavelength Scale Factors&quot;</span><span class="p">,</span>
+    <span class="n">grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">marker</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;reference_wavelength&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="n">linestyle</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;reference_wavelength&quot;</span><span class="p">:</span> <span class="s2">&quot;solid&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">wavelength_scale_factor_plot</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">2.8</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">)</span>
+<span class="n">reference_wavelength</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="n">SelectedReferenceWavelength</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+<span class="n">wavelength_scale_factor_plot</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+    <span class="mf">3.0</span><span class="p">,</span>
+    <span class="mf">0.25</span><span class="p">,</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reference_wavelength</span><span class="si">=:}</span><span class="s2"> [</span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="n">SelectedReferenceWavelength</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">wavelength_scale_factor_plot</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/user-guide_scaling_workflow_14_0.svg" src="../_images/user-guide_scaling_workflow_14_0.svg" />
+</div>
+</div>
+</section>
+</section>
+<section id="Change-Provider">
+<h2>Change Provider<a class="headerlink" href="#Change-Provider" title="Link to this heading">#</a></h2>
+<p>Here is an example of how to insert different filter function.</p>
+<p>In this example, we will swap a provider that filters <code class="docutils literal notranslate"><span class="pre">EstimatedScaledIntensities</span></code> and provide <code class="docutils literal notranslate"><span class="pre">FilteredEstimatedScaledIntensities</span></code>.</p>
+<p>After updating the providers, you can go back to <a class="reference internal" href="#Compute-Desired-Type"><span class="std std-ref">Compute Desired Type</span></a> and start over.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NewType</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ess.nmx.scaling</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EstimatedScaledIntensities</span><span class="p">,</span>
+    <span class="n">FilteredEstimatedScaledIntensities</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Define the new types for the filtering function</span>
+<span class="n">NRoot</span> <span class="o">=</span> <span class="n">NewType</span><span class="p">(</span><span class="s2">&quot;NRoot&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;The n-th root to be taken for the standard deviation.&quot;&quot;&quot;</span>
+<span class="n">NRootStdDevCut</span> <span class="o">=</span> <span class="n">NewType</span><span class="p">(</span><span class="s2">&quot;NRootStdDevCut&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;The number of standard deviations to be cut from the n-th root data.&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_sample_standard_deviation</span><span class="p">(</span><span class="n">var</span><span class="p">:</span> <span class="n">sc</span><span class="o">.</span><span class="n">Variable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sc</span><span class="o">.</span><span class="n">Variable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the sample variation of the data.</span>
+
+<span class="sd">    This helper function is a temporary solution before</span>
+<span class="sd">    we release new scipp version with the statistics helper.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+    <span class="k">return</span> <span class="n">sc</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+
+
+<span class="c1"># Define the filtering function with right argument types and return type</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cut_estimated_scaled_intensities_by_n_root_std_dev</span><span class="p">(</span>
+    <span class="n">scaled_intensities</span><span class="p">:</span> <span class="n">EstimatedScaledIntensities</span><span class="p">,</span>
+    <span class="n">n_root</span><span class="p">:</span> <span class="n">NRoot</span><span class="p">,</span>
+    <span class="n">n_root_std_dev_cut</span><span class="p">:</span> <span class="n">NRootStdDevCut</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FilteredEstimatedScaledIntensities</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter the mtz data array by the quad root of the sample standard deviation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    scaled_intensities:</span>
+<span class="sd">        The scaled intensities to be filtered.</span>
+
+<span class="sd">    n_root:</span>
+<span class="sd">        The n-th root to be taken for the standard deviation.</span>
+<span class="sd">        Higher n-th root means cutting is more effective on the right tail.</span>
+<span class="sd">        More explanation can be found in the notes.</span>
+
+<span class="sd">    n_root_std_dev_cut:</span>
+<span class="sd">        The number of standard deviations to be cut from the n-th root data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :</span>
+<span class="sd">        The filtered scaled intensities.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check the range of the n-th root</span>
+    <span class="k">if</span> <span class="n">n_root</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The n-th root should be equal to or greater than 1.&quot;</span><span class="p">)</span>
+
+    <span class="n">copied</span> <span class="o">=</span> <span class="n">scaled_intensities</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">nth_root</span> <span class="o">=</span> <span class="n">copied</span><span class="o">.</span><span class="n">data</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n_root</span><span class="p">)</span>
+    <span class="c1"># Calculate the mean</span>
+    <span class="n">nth_root_mean</span> <span class="o">=</span> <span class="n">nth_root</span><span class="o">.</span><span class="n">nanmean</span><span class="p">()</span>
+    <span class="c1"># Calculate the sample standard deviation</span>
+    <span class="n">nth_root_std_dev</span> <span class="o">=</span> <span class="n">_calculate_sample_standard_deviation</span><span class="p">(</span><span class="n">nth_root</span><span class="p">)</span>
+    <span class="c1"># Calculate the cut value</span>
+    <span class="n">half_window</span> <span class="o">=</span> <span class="n">n_root_std_dev_cut</span> <span class="o">*</span> <span class="n">nth_root_std_dev</span>
+    <span class="n">keep_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">nth_root_mean</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">,</span> <span class="n">nth_root_mean</span> <span class="o">+</span> <span class="n">half_window</span><span class="p">)</span>
+
+    <span class="c1"># Filter the data</span>
+    <span class="k">return</span> <span class="n">FilteredEstimatedScaledIntensities</span><span class="p">(</span>
+        <span class="n">copied</span><span class="p">[(</span><span class="n">nth_root</span> <span class="o">&gt;</span> <span class="n">keep_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">nth_root</span> <span class="o">&lt;</span> <span class="n">keep_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+    <span class="p">)</span>
+
+
+<span class="n">pl</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">cut_estimated_scaled_intensities_by_n_root_std_dev</span><span class="p">)</span>
+<span class="n">pl</span><span class="p">[</span><span class="n">NRoot</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">pl</span><span class="p">[</span><span class="n">NRootStdDevCut</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">FilteredEstimatedScaledIntensities</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div><!-- Original source from -->
+<!-- https://github.com/jsignell/xarray/blob/1d960933ab252e0f79f7e050e6c9261d55568057/xarray/static/html/icons-svg-inline.html -->
+<svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+<defs>
+<symbol id="icon-database" viewBox="0 0 32 32">
+<title>Show/Hide data repr</title>
+<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
+<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
+</symbol>
+<symbol id="icon-file-text2" viewBox="0 0 32 32">
+<title>Show/Hide attributes</title>
+<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
+<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
+</symbol>
+</defs>
+</svg><style id="scipp-style-sheet">.sc-root{--sc-background-color0:var(--jp-layout-color0,#fff);--sc-background-color1:var(--jp-layout-color1,#fcfcfc);--sc-background-color2:var(--jp-layout-color2,#efefef);--sc-inverse-background-color0:var(--jp-inverse-layout-color4,#111);--sc-font-color0:var(--jp-content-font-color0,#000);--sc-font-color1:var(--jp-content-font-color1,#555);--sc-font-color2:var(--jp-content-font-color2,#888);--sc-font-color3:var(--jp-content-font-color3,#ccc);}body.vscode-dark .sc-root{--sc-font-color0:rgba(255,255,255,1);--sc-font-color1:rgba(255,255,255,0.70);--sc-font-color2:rgba(255,255,255,0.54);--sc-font-color3:rgba(255,255,255,0.38);--sc-border-color:#1F1F1F;--sc-disabled-color:#515151;--sc-background-color0:#111111;--sc-background-color1:#111111;--sc-background-color2:#313131;}.sc-wrap{font-size:14px;min-width:300px;max-width:800px;}.sc-var-attrs .sc-wrap{padding-left:3em;}.sc-header{padding-top:6px;padding-bottom:6px;margin-bottom:4px;border-bottom:solid 1px #ddd;}.sc-header > div,.sc-header > ul{display:inline;margin-top:0;margin-bottom:0;}.sc-obj-type,.sc-array-name{margin-left:2px;margin-right:10px;}.sc-obj-type{color:var(--sc-font-color1);}.sc-underlying-size{color:var(--sc-font-color2);}.sc-sections,.reveal .sc-sections{padding-left:0 !important;display:grid;grid-template-columns:150px auto auto auto 1fr 20px 20px;}.sc-section-item{display:contents;}.sc-section-item input{display:none;}.sc-section-item input:enabled + label{cursor:pointer;color:var(--sc-font-color1);}.sc-section-item input:enabled + label:hover{color:var(--sc-font-color0);}.sc-section-summary{grid-column:1;font-weight:500;}.sc-section-summary > span{display:inline-block;padding-left:0.5em;}.sc-section-summary-in:disabled + label{color:var(--sc-font-color1);}.sc-section-summary-in + label:before{display:inline-block;content:'►';font-size:11px;width:15px;text-align:center;}.sc-section-summary-in:disabled + label:before{color:var(--sc-font-color3);}.sc-section-summary-in:checked + label:before{content:'▼';}.sc-section-summary-in:checked + label > span{display:none;}.sc-section-summary,.sc-section-inline-details{padding-top:4px;padding-bottom:4px;}.sc-section-inline-details{grid-column:2 / 6;}.sc-section-details{display:none;grid-column:1 / -1;margin-bottom:5px;}.sc-section-summary-in:checked ~ .sc-section-details{display:contents;}.sc-array-wrap{grid-column:1 / -1;display:grid;grid-template-columns:20px auto;}.sc-array-wrap > label{grid-column:1;vertical-align:top;}.sc-preview{color:var(--sc-font-color2);}.sc-array-preview,.sc-array-data{padding:0 5px !important;grid-column:2;}.sc-array-data,.sc-array-in:checked ~ .sc-array-preview{display:none;}.sc-array-in:checked ~ .sc-array-data,.sc-array-preview{display:inline-block;}.sc-dim-list{display:inline-block !important;list-style:none;padding:0 !important;margin:0;}.sc-dim-list li{display:inline-block;padding:0;margin:0!important;}.sc-dim-list:before{content:'(';}.sc-dim-list:after{content:')';}.sc-dim-list li:not(:last-child):after{content:',';padding-right:5px;}.sc-dim-list li span,.sc-standalone-var-name > span span,.sc-var-name > span span{padding:0 !important;}.sc-aligned{font-weight:bold;}.sc-var-list,.sc-var-item,.reveal .sc-var-list,.reveal .sc-var-item{display:contents;}.sc-var-item > div,.sc-var-item label,.sc-var-item > .sc-var-name span{background-color:var(--sc-background-color1);margin-bottom:0;}.sc-var-item > .sc-var-name:hover span{padding-right:5px;}.sc-var-list > li:nth-child(odd) > div,.sc-var-list > li:nth-child(odd) > label,.sc-var-list > li:nth-child(odd) > .sc-var-name span{background-color:var(--sc-background-color2);}.sc-var-name{grid-column:1;}.sc-var-dims{grid-column:2;}.sc-var-dtype{grid-column:3;text-align:right;color:var(--sc-font-color2);}.sc-var-unit{grid-column:4;text-align:left;color:var(--sc-font-color1);max-width:50pt;text-overflow:ellipsis;}.sc-value-preview{grid-column:5;}.sc-var-preview-variances{text-align:right;}.sc-sections .sc-section-item .sc-section-summary,.sc-sections .sc-section-item .sc-section-inline-details,.sc-section-item .sc-var-list .sc-var-item > div,.sc-section-item .sc-var-list .sc-var-item > label,.sc-section-details .sc-var-list .sc-var-item > div,.sc-section-details .sc-var-list .sc-var-item > label{margin-top:0;margin-bottom:0;}.sc-var-name,.sc-var-dims,.sc-var-dtype,.sc-var-unit,.sc-preview,.sc-attrs dt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px;}.sc-var-name:hover,.sc-var-dims:hover,.sc-var-dtype:hover,.sc-var-unit:hover,.sc-attrs dt:hover{overflow:visible;width:auto;z-index:1;}.sc-var-attrs{display:block;}.sc-var-data,.reveal .sc-var-data{display:none;}.sc-var-attrs,.sc-var-data{background-color:var(--sc-background-color0) !important;padding-bottom:5px !important;}.sc-var-attrs-in:checked ~ .sc-var-attrs{display:none;}.sc-var-data-in:checked ~ .sc-var-data{display:block;}.sc-var-data > table{float:right;}.sc-var-name span,.sc-var-data{padding-left:25px !important;}.sc-var-attrs,.sc-var-data{grid-column:1 / -1;}dl.sc-attrs{padding:0;margin:0;display:grid;grid-template-columns:125px auto;}.sc-attrs dt,dd{padding:0;margin:0;float:left;padding-right:10px;width:auto;}.sc-attrs dt{font-weight:normal;grid-column:1;}.sc-attrs dt:hover span{display:inline-block;padding-right:10px;}.sc-attrs dd{grid-column:2;white-space:pre-wrap;word-break:break-all;}.sc-icon-database,.sc-icon-file-text2{display:inline-block;vertical-align:middle;width:1em;height:1.5em !important;stroke-width:0;stroke:currentColor;fill:currentColor;}label.sc-hide-icon svg{opacity:0;}.sc-standalone-var-name{grid-column:1/3;}.sc-standalone-var-name span{padding-left:25px;padding-right:10px;}.sc-title{font-weight:bold;font-size:1.5em;}.sc-subtitle{font-weight:normal;font-style:italic;text-align:left;font-size:1.2em;padding:1px;}.sc-label{fill:var(--sc-font-color0,#444444);text-anchor:middle;}.sc-name{fill:var(--sc-font-color0,#111111);}.sc-inset-line{stroke:var(--sc-font-color1);stroke-width:0.05;stroke-dasharray:0.2,0.2;}.sc-log-wrap{height:25ex;resize:vertical;overflow-y:scroll;display:flex;flex-direction:column-reverse;border:1px solid;border-color:var(--jp-border-color2);background-color:var(--sc-background-color1);}div.sc-log{line-height:2.5ex;}table.sc-log{table-layout:auto;border-collapse:collapse;}tr.sc-log:nth-child(even){background-color:var(--sc-background-color0);}tr.sc-log > td{vertical-align:top;padding-bottom:0.5ex;}.sc-log-time-stamp{min-width:22ch;font-family:var(--jp-code-font-family);color:var(--sc-font-color2);}.sc-log-level{min-width:10ch;}tr.sc-log-debug td.sc-log-level{color:var(--jp-accent-color1);}tr.sc-log-info td.sc-log-level{color:var(--jp-info-color1);}tr.sc-log-warning td.sc-log-level{color:var(--jp-warn-color1);}tr.sc-log-error td.sc-log-level{font-weight:bold;color:var(--jp-error-color2);}tr.sc-log-critical td.sc-log-level{font-weight:bold;color:var(--sc-background-color0);background-color:var(--jp-error-color1);}.sc-log-message{white-space:pre-wrap;width:100%;}.sc-log-html-payload{white-space:normal;}.sc-log-name{padding-right:0.5em;text-align:right;white-space:pre-wrap;color:var(--sc-font-color3);}</style><div class='sc-wrap sc-root'><div class='sc-header'><div class='sc-obj-type'>scipp.DataArray (5.06 KB)</div></div><ul class='sc-sections'><li class='sc-section-item'><input id='section-2b821bc6-5260-40b0-9c7b-05010a62a31c' class='sc-section-summary-in' type='checkbox' disabled ><label for='section-2b821bc6-5260-40b0-9c7b-05010a62a31c' class='sc-section-summary' >Dimensions:</label><div class='sc-section-inline-details'><ul class='sc-dim-list'><li><span class='sc-has-index'>wavelength</span>: 180</li></ul></div><div class='sc-section-details'></div></li><li class='sc-section-item'><input id='section-1f191249-4ac2-41f2-ae8a-38070dab22d5' class='sc-section-summary-in' type='checkbox'  checked><label for='section-1f191249-4ac2-41f2-ae8a-38070dab22d5' class='sc-section-summary'  title='Expand/collapse section'>Coordinates: <span>(1)</span></label><div class='sc-section-inline-details'></div><div class='sc-section-details'><ul class='sc-var-list'><li class='sc-var-item'><div class='sc-var-name'><span class='sc-aligned'>wavelength</span></div><div class='sc-var-dims'>(wavelength)</div><div class='sc-var-dtype'>float64</div><div class='sc-var-unit'>Å</div><div class='sc-value-preview sc-preview'><span><div>2.857, 2.859, ..., 3.143, 3.145</div></span></div><input id='attrs-a7366e51-e5a1-4d33-8ba7-fcbd2455e991' class='sc-var-attrs-in' type='checkbox' disabled><label for='attrs-a7366e51-e5a1-4d33-8ba7-fcbd2455e991' class='sc-hide-icon' title='Show/Hide attributes'><svg class='icon sc-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-1a450871-8975-4852-b492-97690ef68ccd' class='sc-var-data-in' type='checkbox'><label for='data-1a450871-8975-4852-b492-97690ef68ccd' title='Show/Hide data repr'><svg class='icon sc-icon-database'><use xlink:href='#icon-database'></use></svg></label><pre class='sc-var-data'>Values:<br>array([2.85720197, 2.85880009, 2.86199633, 2.86359445, 2.86519257,
+       2.86679069, 2.86838881, 2.86998693, 2.87158505, 2.87318317,
+       2.8747813 , 2.87637942, 2.87797754, 2.87957566, 2.88117378,
+       2.8827719 , 2.88437002, 2.88596814, 2.88756626, 2.88916438,
+       2.8907625 , 2.89236062, 2.89395874, 2.89555686, 2.89715498,
+       2.89875311, 2.90035123, 2.90194935, 2.90354747, 2.90514559,
+       2.90674371, 2.90834183, 2.90993995, 2.91153807, 2.91313619,
+       2.91473431, 2.91633243, 2.91793055, 2.91952867, 2.9211268 ,
+       2.92272492, 2.92432304, 2.92592116, 2.92751928, 2.9291174 ,
+       2.93071552, 2.93231364, 2.93391176, 2.93550988, 2.937108  ,
+       2.93870612, 2.94030424, 2.94190236, 2.94350048, 2.94509861,
+       2.94669673, 2.94829485, 2.94989297, 2.95149109, 2.95308921,
+       2.95468733, 2.95628545, 2.95788357, 2.95948169, 2.96107981,
+       2.96267793, 2.96427605, 2.96587417, 2.9674723 , 2.96907042,
+       2.97066854, 2.97226666, 2.97386478, 2.9754629 , 2.97706102,
+       2.97865914, 2.98025726, 2.98185538, 2.9834535 , 2.98505162,
+       2.98664974, 2.98824786, 2.98984598, 2.99144411, 2.99304223,
+       2.99464035, 2.99623847, 2.99783659, 2.99943471, 3.00103283,
+       3.00263095, 3.00422907, 3.00582719, 3.00742531, 3.00902343,
+       3.01062155, 3.01221967, 3.0138178 , 3.01541592, 3.01701404,
+       3.01861216, 3.02021028, 3.0218084 , 3.02340652, 3.02500464,
+       3.02660276, 3.02820088, 3.029799  , 3.03139712, 3.03299524,
+       3.03459336, 3.03619148, 3.03778961, 3.03938773, 3.04098585,
+       3.04258397, 3.04418209, 3.04578021, 3.04737833, 3.04897645,
+       3.05057457, 3.05217269, 3.05377081, 3.05536893, 3.05696705,
+       3.05856517, 3.0601633 , 3.06176142, 3.06335954, 3.06495766,
+       3.06655578, 3.0681539 , 3.06975202, 3.07135014, 3.07294826,
+       3.07454638, 3.0761445 , 3.07774262, 3.07934074, 3.08093886,
+       3.08253698, 3.08413511, 3.08573323, 3.08733135, 3.08892947,
+       3.09052759, 3.09212571, 3.09372383, 3.09532195, 3.09692007,
+       3.09851819, 3.10011631, 3.10171443, 3.10331255, 3.10491067,
+       3.1065088 , 3.10810692, 3.10970504, 3.11130316, 3.11290128,
+       3.1144994 , 3.11609752, 3.11769564, 3.11929376, 3.12089188,
+       3.12249   , 3.12408812, 3.12568624, 3.12728436, 3.12888248,
+       3.13048061, 3.13207873, 3.13367685, 3.13527497, 3.13687309,
+       3.13847121, 3.14006933, 3.14166745, 3.14326557, 3.14486369])</pre></span></li></ul></div></li><li class='sc-section-item'><input id='section-c95cec48-691c-4d26-a645-d1600bf98b29' class='sc-section-summary-in' type='checkbox'  checked><label for='section-c95cec48-691c-4d26-a645-d1600bf98b29' class='sc-section-summary'  title='Expand/collapse section'>Data: <span>(1)</span></label><div class='sc-section-inline-details'></div><div class='sc-section-details'><ul class='sc-var-list'><li class='sc-var-item'><div class='sc-var-name'><span></span></div><div class='sc-var-dims'>(wavelength)</div><div class='sc-var-dtype'>float64</div><div class='sc-var-unit'>𝟙</div><div class='sc-value-preview sc-preview'><span><div>0.607, 0.635, ..., 1.426, 1.433</div></span><span><div>σ = 0.008, 0.010, ..., 0.016, 0.016</div></span></div><input id='attrs-6022c878-1f85-4b16-92d9-59f5a56fdefc' class='sc-var-attrs-in' type='checkbox' disabled><label for='attrs-6022c878-1f85-4b16-92d9-59f5a56fdefc' class='sc-hide-icon' title='Show/Hide attributes'><svg class='icon sc-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-6fe3d9db-731d-4b9e-8d59-d609941b2049' class='sc-var-data-in' type='checkbox'><label for='data-6fe3d9db-731d-4b9e-8d59-d609941b2049' title='Show/Hide data repr'><svg class='icon sc-icon-database'><use xlink:href='#icon-database'></use></svg></label><pre class='sc-var-data'>Values:<br>array([0.60701136, 0.63543251, 0.61014797, 0.60687841, 0.64063341,
+       0.64477855, 0.63060851, 0.6354285 , 0.63241668, 0.6801704 ,
+       0.64791815, 0.65241405, 0.67176579, 0.66216388, 0.67983785,
+       0.76573685, 0.6897617 , 0.69497858, 0.68923385, 0.69421855,
+       0.71312324, 0.71762069, 0.71924796, 0.71350834, 0.73973755,
+       0.73987078, 0.73091883, 0.76524373, 0.78709439, 0.75940385,
+       0.7531101 , 0.75556798, 0.7649094 , 0.80252712, 0.77212538,
+       0.78140896, 0.78655757, 0.80898602, 0.79107113, 0.80424133,
+       0.81415732, 0.80318773, 0.82257562, 0.82421577, 0.81914805,
+       0.83883417, 0.82893376, 0.83124682, 0.83585803, 0.83850146,
+       0.84103569, 0.84695262, 0.85688075, 0.86945677, 0.85906804,
+       0.9218925 , 0.86914816, 0.91045699, 0.88111809, 0.91048742,
+       0.9135022 , 0.92319082, 0.9091663 , 0.94769961, 0.91789943,
+       0.90172197, 0.91641999, 1.00243711, 0.92708451, 0.92340422,
+       0.94519391, 0.958041  , 0.95741827, 0.94907516, 0.96260363,
+       0.94877115, 0.95156596, 0.99797824, 0.98314835, 0.96406614,
+       0.98796071, 0.97131976, 0.97809237, 1.0047737 , 0.98358337,
+       0.98823764, 0.99075758, 1.01890895, 1.00002533, 1.00280132,
+       1.01720885, 1.02456602, 1.02862338, 1.04339159, 1.11048209,
+       1.02642898, 1.03125943, 1.05767551, 1.03819415, 1.06594585,
+       1.0475024 , 1.05550821, 1.05997372, 1.06479941, 1.10447633,
+       1.07160543, 1.08583605, 1.10037271, 1.07918654, 1.096032  ,
+       1.09064145, 1.14224181, 1.14131522, 1.1131383 , 1.11509902,
+       1.14921045, 1.14752224, 1.15394375, 1.13732574, 1.12480986,
+       1.13199338, 1.1355053 , 1.14498709, 1.15131283, 1.16019585,
+       1.14926851, 1.20596178, 1.19317325, 1.20938738, 1.17243895,
+       1.18824331, 1.2029705 , 1.24170481, 1.19589819, 1.19257404,
+       1.21140305, 1.20021868, 1.21995624, 1.20940748, 1.256482  ,
+       1.21893929, 1.22344128, 1.26310797, 1.25332745, 1.24698495,
+       1.24481521, 1.27492469, 1.25980644, 1.25842109, 1.26101988,
+       1.26799712, 1.28305818, 1.27821921, 1.28031813, 1.2984795 ,
+       1.29552409, 1.30833405, 1.37305781, 1.3077331 , 1.35069681,
+       1.31686891, 1.37084274, 1.34994883, 1.36527644, 1.34026168,
+       1.36052391, 1.37756447, 1.36338963, 1.38524905, 1.36879148,
+       1.38171194, 1.38826252, 1.38789918, 1.40076755, 1.41014075,
+       1.43422107, 1.43542983, 1.43605585, 1.42629685, 1.43292886])<br><br>Variances (σ²):<br>array([5.74795388e-05, 9.93314364e-05, 3.98175406e-05, 5.14143117e-05,
+       6.59856884e-05, 6.35042274e-05, 5.12313977e-05, 5.03618029e-05,
+       5.48519377e-05, 6.64681424e-05, 5.44289193e-05, 5.28388613e-05,
+       6.18483531e-05, 6.49031775e-05, 5.17519600e-05, 1.58387702e-04,
+       5.97465988e-05, 6.94945851e-05, 6.17728263e-05, 6.55613101e-05,
+       6.64384083e-05, 6.10811798e-05, 6.79638741e-05, 6.27376788e-05,
+       6.04419593e-05, 5.94244647e-05, 6.86752165e-05, 6.63347564e-05,
+       1.16998465e-04, 7.06466281e-05, 7.18489677e-05, 6.07973663e-05,
+       6.64159835e-05, 9.21256233e-05, 7.51157075e-05, 7.64880785e-05,
+       7.49804098e-05, 8.41489392e-05, 8.22133027e-05, 8.44401545e-05,
+       8.60130996e-05, 8.42609198e-05, 9.90535932e-05, 8.61488066e-05,
+       8.50271382e-05, 8.76785252e-05, 8.34146837e-05, 7.02328085e-05,
+       1.00364941e-04, 9.05520394e-05, 9.42670424e-05, 9.19481589e-05,
+       9.79183486e-05, 9.65009092e-05, 8.78656880e-05, 1.20414926e-04,
+       9.97904008e-05, 1.23560947e-04, 9.40254289e-05, 1.04686854e-04,
+       1.14489579e-04, 1.22188220e-04, 1.13109919e-04, 1.28414724e-04,
+       1.25353117e-04, 1.21911209e-04, 9.33227901e-05, 1.74027431e-04,
+       1.04913489e-04, 1.25347383e-04, 1.10791537e-04, 1.26701847e-04,
+       1.09050282e-04, 1.24742060e-04, 1.30781863e-04, 1.05761382e-04,
+       1.11854640e-04, 1.41779497e-04, 1.31608731e-04, 1.30743276e-04,
+       1.20826420e-04, 1.26319151e-04, 1.34927236e-04, 1.38158530e-04,
+       1.27356091e-04, 1.19864312e-04, 1.11187810e-04, 1.48789152e-04,
+       1.01213931e-04, 1.20698080e-04, 1.43554691e-04, 1.38697908e-04,
+       1.25700611e-04, 1.37931585e-04, 1.61406860e-04, 1.37677380e-04,
+       1.58749289e-04, 1.38160188e-04, 1.55284500e-04, 1.42545751e-04,
+       1.27560210e-04, 1.42550483e-04, 1.49925713e-04, 1.52065118e-04,
+       1.55441427e-04, 1.23287290e-04, 1.55261442e-04, 1.44539525e-04,
+       1.24982438e-04, 1.57909050e-04, 1.49287766e-04, 2.06205310e-04,
+       1.90313201e-04, 1.77068448e-04, 1.71384686e-04, 1.79194967e-04,
+       1.81565258e-04, 1.82234209e-04, 1.63582868e-04, 1.53892338e-04,
+       1.61651550e-04, 1.55816162e-04, 1.77663538e-04, 1.43336109e-04,
+       1.79886967e-04, 1.44532259e-04, 2.15440507e-04, 1.78006524e-04,
+       1.68227794e-04, 1.43395734e-04, 1.68639373e-04, 2.08071896e-04,
+       2.88074238e-04, 1.69707896e-04, 2.09134167e-04, 1.68616751e-04,
+       1.68781981e-04, 1.89460765e-04, 1.70585735e-04, 2.13972053e-04,
+       1.83197052e-04, 1.77821792e-04, 2.12173908e-04, 1.94450779e-04,
+       2.00403246e-04, 2.15643301e-04, 1.80441688e-04, 2.11129070e-04,
+       2.12913190e-04, 2.02940199e-04, 1.92602365e-04, 1.97268100e-04,
+       2.11366868e-04, 2.23142283e-04, 2.23695021e-04, 1.99477666e-04,
+       2.05906838e-04, 2.75295912e-04, 2.21289923e-04, 2.34401372e-04,
+       2.12831768e-04, 2.33427866e-04, 2.35852820e-04, 2.32453124e-04,
+       2.25265472e-04, 2.60025287e-04, 2.28782691e-04, 2.31453403e-04,
+       2.34481505e-04, 2.85590814e-04, 3.04085898e-04, 2.48227948e-04,
+       2.44201201e-04, 2.40701814e-04, 2.76635060e-04, 2.38082663e-04,
+       2.61419961e-04, 2.59264576e-04, 2.41191106e-04, 2.51345766e-04])</pre></li></ul></div></li></ul></div></div></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="workflow_chunk.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Workflow - Chunk by Chunk</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="installation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Installation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025 Scipp contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><!-- This will display the version of the docs -->
+Current ESSnmx version: 25.3.0 (<a href="https://github.com/scipp/essnmx/releases">older versions</a>).</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
