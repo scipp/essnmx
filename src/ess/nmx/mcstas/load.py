@@ -161,12 +161,15 @@ def raw_event_data_chunk_generator(
                         stacklevel=2,
                     )
                 yield da
-
-        else:
+        elif chunk_size == -1:
+            yield _wrap_raw_event_data(dset[()])
+        elif chunk_size > 0:
             num_events = dset.shape[0]
             for start in range(0, num_events, chunk_size):
                 data = dset["dim_0", start : start + chunk_size]
                 yield _wrap_raw_event_data(data)
+        else:
+            raise ValueError("Invalid chunk size. It should be -1(for all) or > 0.")
 
 
 def load_crystal_rotation(

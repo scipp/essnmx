@@ -85,5 +85,7 @@ def calculate_number_of_chunks(
         dset: snx.Field = root[bank_name]["events"]
         if chunk_size == 0:
             return len(list(dset.dataset.iter_chunks()))
+        elif chunk_size == -1:
+            return 1  # Read all at once
         else:
             return dset.shape[0] // chunk_size + int(dset.shape[0] % chunk_size != 0)
