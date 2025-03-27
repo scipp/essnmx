@@ -481,7 +481,7 @@ class NXLauetofWriter:
             **(extra_meta or {}),
         )
 
-    def add_panel(self, *, detector_id: DetectorIndex | DetectorName) -> None:
+    def add_panel(self, *, detector_id: DetectorIndex | DetectorName) -> NMXReducedDataGroup:
         from .types import PixelIds
 
         temp_wf = self._workflow.copy()
