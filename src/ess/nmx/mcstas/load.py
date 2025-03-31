@@ -100,6 +100,27 @@ def load_raw_event_data(
         return _wrap_raw_event_data(data)
 
 
+def _check_chunk_size(chunk_size: int) -> None:
+    if 0 < chunk_size < 10_000_000:
+        import warnings
+
+        warnings.warn(
+            "The chunk size may be too small < 10_000_000.\n"
+            "Consider increasing the chunk size for better performance.\n"
+            "Hint: NMX typically expect ~10^8 bins as reduced data.",
+            UserWarning,
+            stacklevel=2,
+        )
+
+
+def _validate_chunck_size(chunk_size: int) -> None:
+    """Validate the chunk size."""
+    if not isinstance(chunk_size, int):
+        raise TypeError("Chunk size must be an integer.")
+    if chunk_size < -1:
+        raise ValueError("Invalid chunk size. It should be -1(for all) or > 0.")
+
+
 def raw_event_data_chunk_generator(
     file_path: FilePath,
     *,
@@ -122,17 +143,23 @@ def raw_event_data_chunk_generator(
         If 0, chunk slice is determined automatically by the ``iter_chunks``.
         Note that it only works if the dataset is already chunked.
 
-    """
-    if 0 < chunk_size < 10_000_000:
-        import warnings
+    Yields
+    ------
+    RawEventProbability:
+        Data array containing the events of the detector.
 
-        warnings.warn(
-            "The chunk size may be too small < 10_000_000.\n"
-            "Consider increasing the chunk size for better performance.\n"
-            "Hint: NMX typically expect ~10^8 bins as reduced data.",
-            UserWarning,
-            stacklevel=2,
-        )
+    Raises
+    ------
+    ValueError:
+        If the chunk size is not valid. (>= -1)
+    TypeError:
+        If the chunk size is not an integer.
+    Warning
+        If the chunk size is too small (< 10_000_000).
+
+    """
+    _check_chunk_size(chunk_size)
+    _validate_chunck_size(chunk_size)
 
     # Find the data bank name associated with the detector
     bank_prefix = load_event_data_bank_name(
@@ -163,13 +190,11 @@ def raw_event_data_chunk_generator(
                 yield da
         elif chunk_size == -1:
             yield _wrap_raw_event_data(dset[()])
-        elif chunk_size > 0:
+        else:
             num_events = dset.shape[0]
             for start in range(0, num_events, chunk_size):
                 data = dset["dim_0", start : start + chunk_size]
                 yield _wrap_raw_event_data(data)
-        else:
-            raise ValueError("Invalid chunk size. It should be -1(for all) or > 0.")
 
 
 def load_crystal_rotation(
