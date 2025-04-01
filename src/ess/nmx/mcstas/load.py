@@ -121,7 +121,7 @@ def _check_maximum_chunk_size(d_slices: tuple[slice, ...]) -> None:
     _check_chunk_size(max_chunk_size)
 
 
-def _validate_chunck_size(chunk_size: int) -> None:
+def _validate_chunk_size(chunk_size: int) -> None:
     """Validate the chunk size."""
     if not isinstance(chunk_size, int):
         raise TypeError("Chunk size must be an integer.")
@@ -167,7 +167,7 @@ def raw_event_data_chunk_generator(
 
     """
     _check_chunk_size(chunk_size)
-    _validate_chunck_size(chunk_size)
+    _validate_chunk_size(chunk_size)
 
     # Find the data bank name associated with the detector
     bank_prefix = load_event_data_bank_name(
