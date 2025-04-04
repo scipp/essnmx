@@ -9,8 +9,9 @@ import numpy as np
 import pandas as pd
 import scipp as sc
 
-from .dials_reflection_io import load_reflection_file
+from .dials_reflection_io import f
 from .mtz_io import NMXMtzDataArray
+from .dials_reflection_io import load_reflection_file
 
 # User defined or configurable types
 DialsReflectionFilePath = NewType("DialsReflectionFilePath", pathlib.Path)
