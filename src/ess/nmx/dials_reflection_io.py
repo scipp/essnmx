@@ -10,20 +10,21 @@ much older files might be in pickle format, which this doesn't read.
 Adapted from Nick Cavendish of the DIALS team.
 """
 
-from dataclasses import dataclass
 import functools
+import logging
 import operator
 import os
 import struct
 import sys
 from collections.abc import Iterable
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 from typing import IO, cast
-import logging
 
 import msgpack
 import numpy as np
+
 
 @dataclass
 class Shoebox:
@@ -64,6 +65,7 @@ def _decode_raw_numpy(dtype, shape: int | Iterable = 1):
         return array
 
     return _decode_specific
+
 
 def _decode_shoeboxes(data: list, copy) -> list[Shoebox | None]:
     # Shoebox is float
@@ -122,15 +124,19 @@ _reftable_decoders = {
     # "std::string": _decode_wip, # - string writing broken; dials/dials#1858
 }
 
+
 def decode_column(column_entry, copy):
     """Decode a single column value"""
     datatype, data = column_entry
 
     converter = _reftable_decoders.get(datatype)
     if not converter:
-        logging.warning(f"Data type '{datatype}' does not have a converter; cannot read")
+        logging.warning(
+            f"Data type '{datatype}' does not have a converter; cannot read"
+        )
         return None
     return converter(data, copy=copy)
+
 
 def _get_unpacked(stream_or_path: str | IO | bytes | os.PathLike):
     """Works out the logic to pass a stream/pathlike to msgpack"""
@@ -150,6 +156,7 @@ def _get_unpacked(stream_or_path: str | IO | bytes | os.PathLike):
         un = msgpack.Unpacker(stream_or_path, strict_map_key=False)
         return un.unpack()
 
+
 def loads(data: bytes, copy=False):
     """
     Load a DIALS msgpack-encoded .refl file.
@@ -161,6 +168,7 @@ def loads(data: bytes, copy=False):
     Returns: See .load(stream_or_path)
     """
     return load_reflection_file(BytesIO(data), copy)
+
 
 def load_reflection_file(stream_or_path: IO | Path | os.PathLike, copy=False) -> dict:
     """
