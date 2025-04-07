@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import scipp as sc
 
-from .dials_reflection_io import f, load_reflection_file
+from .dials_reflection_io import load_reflection_file
 from .mtz_io import NMXMtzDataArray
 
 # User defined or configurable types
