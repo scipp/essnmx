@@ -10,20 +10,20 @@ much older files might be in pickle format, which this doesn't read.
 Adapted from Nick Cavendish of the DIALS team.
 """
 
-from dataclasses import dataclass
 import functools
+import logging
 import operator
 import os
 import struct
-import sys
 from collections.abc import Iterable
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 from typing import IO, cast
-import logging
 
 import msgpack
 import numpy as np
+
 
 @dataclass
 class Shoebox:
@@ -56,14 +56,27 @@ def _decode_raw_numpy(dtype, shape: int | Iterable = 1):
 
         if shape != (1,):
             item_width = functools.reduce(operator.mul, shape)
-            assert len(raw) % item_width == 0
-            assert num_items * item_width == len(array)
+            if (len(raw) % item_width) != 0:
+                raise AssertionError(
+                    "Data length %s is not divisible by item width %s",
+                    len(raw),
+                    item_width,
+                )
+            elif (num_items * item_width) != len(array):
+                raise AssertionError(
+                    "Data length %s is not equal to "
+                    "number of items %s times item width %s",
+                    len(array),
+                    num_items,
+                    item_width,
+                )
             array = array.reshape(num_items, *shape)
         if copy:
             return np.copy(array)
         return array
 
     return _decode_specific
+
 
 def _decode_shoeboxes(data: list, copy) -> list[Shoebox | None]:
     # Shoebox is float
@@ -99,12 +112,20 @@ def _decode_shoeboxes(data: list, copy) -> list[Shoebox | None]:
                 shoebox["mask"] = np.copy(shoebox["mask"])
                 shoebox["background"] = np.copy(shoebox["background"])
 
-        # Although this is technically a divergence, return None instead of an empty shoebox
+        # Although this is technically a divergence,
+        # return None instead of an empty shoebox
         if not data_present and all(x == 0 for x in bbox) and panel == 0:
             shoeboxes.append(None)
         else:
             shoeboxes.append(Shoebox(**shoebox))
-    assert num_items == len(shoeboxes)
+    if len(shoeboxes) != num_items:
+        raise AssertionError(
+            "Warning: Mismatch of shoebox length: %s "
+            "is not same as the number of items: %s",
+            len(shoeboxes),
+            num_items,
+        )
+
     return np.array(shoeboxes, dtype=np.object_)
 
 
@@ -122,15 +143,19 @@ _reftable_decoders = {
     # "std::string": _decode_wip, # - string writing broken; dials/dials#1858
 }
 
+
 def decode_column(column_entry, copy):
     """Decode a single column value"""
     datatype, data = column_entry
 
     converter = _reftable_decoders.get(datatype)
     if not converter:
-        logging.warning(f"Data type '{datatype}' does not have a converter; cannot read")
+        logging.warning(
+            "Data type '%s' does not have a converter; cannot read", datatype
+        )
         return None
     return converter(data, copy=copy)
+
 
 def _get_unpacked(stream_or_path: str | IO | bytes | os.PathLike):
     """Works out the logic to pass a stream/pathlike to msgpack"""
@@ -150,6 +175,7 @@ def _get_unpacked(stream_or_path: str | IO | bytes | os.PathLike):
         un = msgpack.Unpacker(stream_or_path, strict_map_key=False)
         return un.unpack()
 
+
 def loads(data: bytes, copy=False):
     """
     Load a DIALS msgpack-encoded .refl file.
@@ -161,6 +187,7 @@ def loads(data: bytes, copy=False):
     Returns: See .load(stream_or_path)
     """
     return load_reflection_file(BytesIO(data), copy)
+
 
 def load_reflection_file(stream_or_path: IO | Path | os.PathLike, copy=False) -> dict:
     """
@@ -193,7 +220,8 @@ def load_reflection_file(stream_or_path: IO | Path | os.PathLike, copy=False) ->
         raise ValueError("Does not appear to be a dials reflection table file")
     if not root_data[1] == 1:
         raise ValueError(
-            f"reflection_table data is version {root_data[1]}. Only Version 1 is understood"
+            f"reflection_table data is version {root_data[1]}. "
+            "Only Version 1 is understood"
         )
     refdata = root_data[2]
 
@@ -212,7 +240,10 @@ def load_reflection_file(stream_or_path: IO | Path | os.PathLike, copy=False) ->
     for name, column in decoded_data.items():
         if len(column) != rows:
             logging.warning(
-                f"Warning: Mismatch of column lengths: {name} is {len(column)} instead of expected {rows}"
+                "Warning: Mismatch of column lengths: %s is %s instead of expected %s",
+                name,
+                len(column),
+                rows,
             )
 
     # Make an "identifiers" column

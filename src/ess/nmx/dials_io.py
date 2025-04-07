@@ -1,17 +1,16 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
+import json
 import pathlib
 from typing import NewType
 
 import gemmi
-import json
 import numpy as np
 import pandas as pd
 import scipp as sc
 
-from .dials_reflection_io import f
-from .mtz_io import NMXMtzDataArray
 from .dials_reflection_io import load_reflection_file
+from .mtz_io import NMXMtzDataArray
 
 # User defined or configurable types
 DialsReflectionFilePath = NewType("DialsReflectionFilePath", pathlib.Path)
@@ -56,16 +55,19 @@ NMXDialsDataFrame = NewType("NMXDialsDataFrame", pd.DataFrame)
 """The processed mtz dataframe with derived columns."""
 NMXDialsDataArray = NewType("NMXDialsDataArray", sc.DataArray)
 
+
 def read_dials_reflection_file(file_path: DialsReflectionFilePath) -> DialsReflections:
     """read dials reflection file"""
 
     return DialsReflections(load_reflection_file(file_path.as_posix(), copy=True))
+
 
 def read_dials_experiment_file(file_path: DialsExperimentFilePath) -> DialsExperiment:
     """Read Dials Experiment .expt file"""
     with open(file_path) as fp:
         json_data = json.load(fp)
     return DialsExperiment(json_data)
+
 
 def get_unit_cell(dials_expt: DialsExperiment) -> UnitCell:
     """
@@ -78,11 +80,12 @@ def get_unit_cell(dials_expt: DialsExperiment) -> UnitCell:
     a = np.linalg.norm(ra)
     b = np.linalg.norm(rb)
     c = np.linalg.norm(rc)
-    al = np.rad2deg(np.arccos(np.dot(rb,rc)/(b*c)))
-    be = np.rad2deg(np.arccos(np.dot(ra,rc)/(a*c)))
-    ga = np.rad2deg(np.arccos(np.dot(ra,rb)/(a*b)))
+    al = np.rad2deg(np.arccos(np.dot(rb, rc) / (b * c)))
+    be = np.rad2deg(np.arccos(np.dot(ra, rc) / (a * c)))
+    ga = np.rad2deg(np.arccos(np.dot(ra, rb) / (a * b)))
 
-    return UnitCell(a,b,c,al,be,ga)
+    return UnitCell(a, b, c, al, be, ga)
+
 
 def get_space_group(dials_expt: DialsExperiment) -> gemmi.SpaceGroup:
     """
@@ -95,11 +98,11 @@ def get_space_group(dials_expt: DialsExperiment) -> gemmi.SpaceGroup:
 
     return gemmi.find_spacegroup_by_ops(gemmi.symops_from_hall(sg_hall))
 
+
 def get_reciprocal_asu(spacegroup: gemmi.SpaceGroup) -> gemmi.ReciprocalAsu:
     """Returns the reciprocal asymmetric unit from the space group."""
 
     return gemmi.ReciprocalAsu(spacegroup)
-
 
 
 def dials_refl_to_pandas(refls: DialsReflections) -> pd.DataFrame:
@@ -121,11 +124,12 @@ def dials_refl_to_pandas(refls: DialsReflections) -> pd.DataFrame:
     """
     if refls.get('experiment_identifier'):  # this has no relevant information
         del refls['experiment_identifier']  # and it complicates loading as a df
-    df = pd.DataFrame({
-        key: list(val) if isinstance(val, np.ndarray) and val.ndim > 1
-        else val
-        for key, val in refls.items()
-        })
+    df = pd.DataFrame(
+        {
+            key: list(val) if isinstance(val, np.ndarray) and val.ndim > 1 else val
+            for key, val in refls.items()
+        }
+    )
     for col in df.select_dtypes('uint64'):
         df[col] = df[col].astype('int64')
     return df
@@ -188,11 +192,12 @@ def process_dials_refl_list_to_dataframe(
 
     return DialsDataFrame(new_df)
 
+
 def process_dials_dataframe(
     *,
     dials_df: DialsDataFrame,
     reciprocal_asu: gemmi.ReciprocalAsu,
-    sg: gemmi.SpaceGroup
+    sg: gemmi.SpaceGroup,
 ) -> NMXDialsDataFrame:
     """Modify/Add columns of the shallow copy of a dials dataframe.
 
@@ -200,10 +205,12 @@ def process_dials_dataframe(
     """
 
     df = dials_df.copy(deep=False)
+
     def _reciprocal_asu(row: pd.Series) -> list[int]:
         """Converts miller indices(HKL) to ASU indices."""
 
         return reciprocal_asu.to_asu(row["hkl"], sg.operations())[0]
+
     df["hkl_asu"] = df.apply(_reciprocal_asu, axis=1)
     # Unpack the indices for later.
     df[["H_ASU", "K_ASU", "L_ASU"]] = pd.DataFrame(
@@ -211,6 +218,7 @@ def process_dials_dataframe(
     )
 
     return NMXDialsDataFrame(df)
+
 
 def nmx_dials_dataframe_to_scipp_dataarray(
     nmx_mtz_df: NMXDialsDataFrame,
