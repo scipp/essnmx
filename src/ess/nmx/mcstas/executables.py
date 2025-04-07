@@ -168,12 +168,10 @@ def reduction(
     else:
         if logger is not None:
             logger.info("Metadata given: %s", toa_min_max_prob)
-        toa_min = sc.scalar(toa_min_max_prob[0],unit='s')
+        toa_min = sc.scalar(toa_min_max_prob[0], unit='s')
         toa_max = sc.scalar(toa_min_max_prob[1], unit='s')
         prob_max = sc.scalar(toa_min_max_prob[2])
-        toa_bin_edges = sc.linspace(
-            dim='t', start=toa_min, stop=toa_max, num=51
-        )
+        toa_bin_edges = sc.linspace(dim='t', start=toa_min, stop=toa_max, num=51)
         scale_factor = mcstas_weight_to_probability_scalefactor(
             max_counts=wf.compute(MaximumCounts),
             max_probability=prob_max,
@@ -243,8 +241,11 @@ def reduction(
         result_list.append(result)
         if logger is not None:
             logger.info("Appending reduced data into the output file %s", output_file)
-        _export_reduced_data_as_nxlauetof(result, output_file=output_file, compress_counts=compression)
+        _export_reduced_data_as_nxlauetof(
+            result, output_file=output_file, compress_counts=compression
+        )
     from ess.nmx.reduction import merge_panels
+
     return merge_panels(*result_list)
 
 
@@ -281,7 +282,6 @@ def main() -> None:
         default=True,
         help="Compress reduced output with bitshuffle/lz4",
     )
-
 
     args = parser.parse_args()
 
