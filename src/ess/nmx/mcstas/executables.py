@@ -139,6 +139,7 @@ def reduction(
     input_file: pathlib.Path,
     output_file: pathlib.Path,
     chunk_size: int = 10_000_000,
+    nbins: int = 51,
     detector_ids: list[int | str],
     wf: sl.Pipeline | None = None,
     logger: logging.Logger | None = None,
@@ -156,7 +157,7 @@ def reduction(
         logger.info("Metadata retrieved: %s", data_metadata)
 
     toa_bin_edges = sc.linspace(
-        dim='t', start=data_metadata.min_toa, stop=data_metadata.max_toa, num=51
+        dim='t', start=data_metadata.min_toa, stop=data_metadata.max_toa, num=nbins
     )
     scale_factor = mcstas_weight_to_probability_scalefactor(
         max_counts=wf.compute(MaximumCounts),
@@ -248,6 +249,12 @@ def main() -> None:
         help="Chunk size for processing. Pass -1 to process the whole file at once",
     )
     parser.add_argument(
+        "--nbins",
+        type=int,
+        default=51,
+        help="Number of TOF bins",
+    )
+    parser.add_argument(
         "--detector_ids",
         type=int,
         nargs="+",
@@ -270,6 +277,7 @@ def main() -> None:
         input_file=input_file,
         output_file=output_file,
         chunk_size=args.chunk_size,
+        nbins=args.nbins,
         detector_ids=args.detector_ids,
         logger=logger,
         wf=wf,
