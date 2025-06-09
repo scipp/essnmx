@@ -140,6 +140,7 @@ def reduction(
     output_file: pathlib.Path,
     chunk_size: int = 10_000_000,
     nbins: int = 51,
+    max_counts: int | None = None,
     detector_ids: list[int | str],
     wf: sl.Pipeline | None = None,
     logger: logging.Logger | None = None,
@@ -159,10 +160,16 @@ def reduction(
     toa_bin_edges = sc.linspace(
         dim='t', start=data_metadata.min_toa, stop=data_metadata.max_toa, num=nbins
     )
-    scale_factor = mcstas_weight_to_probability_scalefactor(
-        max_counts=wf.compute(MaximumCounts),
-        max_probability=data_metadata.max_probability,
-    )
+    if max_counts:
+        scale_factor = mcstas_weight_to_probability_scalefactor(
+            max_counts=MaximumCounts(max_counts),
+            max_probability=data_metadata.max_probability,
+        )
+    else:
+        scale_factor = mcstas_weight_to_probability_scalefactor(
+            max_counts=wf.compute(MaximumCounts),
+            max_probability=data_metadata.max_probability,
+        )
     # Compute metadata and make the skeleton output file
     experiment_metadata = wf.compute(NMXExperimentMetadata)
     detector_metas = []
@@ -255,6 +262,12 @@ def main() -> None:
         help="Number of TOF bins",
     )
     parser.add_argument(
+        "--max_counts",
+        type=int,
+        default=None,
+        help="Maximum Counts",
+    )
+    parser.add_argument(
         "--detector_ids",
         type=int,
         nargs="+",
@@ -278,6 +291,7 @@ def main() -> None:
         output_file=output_file,
         chunk_size=args.chunk_size,
         nbins=args.nbins,
+        max_counts=args.max_counts,
         detector_ids=args.detector_ids,
         logger=logger,
         wf=wf,
