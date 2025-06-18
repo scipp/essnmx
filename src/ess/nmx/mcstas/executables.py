@@ -3,7 +3,6 @@
 import argparse
 import logging
 import pathlib
-import sys
 from collections.abc import Callable
 from functools import partial
 
@@ -261,61 +260,27 @@ def reduction(
     return merge_panels(*result_list)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="McStas Data Reduction.")
-    parser.add_argument(
-        "--input_file", type=str, help="Path to the input file", required=True
-    )
-    parser.add_argument(
-        "--output_file",
-        type=str,
-        default="scipp_output.h5",
-        help="Path to the output file",
-    )
-    parser.add_argument(
-        "--verbose", action="store_true", help="Increase output verbosity"
-    )
-    parser.add_argument(
-        "--chunk_size",
-        type=int,
-        default=10_000_000,
-        help="Chunk size for processing",
-    )
-    parser.add_argument(
-        "--nbins",
-        type=int,
-        default=51,
-        help="Number of TOF bins",
-    )
-    parser.add_argument(
+def _add_mcstas_args(parser: argparse.ArgumentParser) -> None:
+    mcstas_arg_group = parser.add_argument_group("McStas Data Reduction Options")
+    mcstas_arg_group.add_argument(
         "--max_counts",
         type=int,
         default=None,
         help="Maximum Counts",
     )
-    parser.add_argument(
-        "--detector_ids",
-        type=int,
-        nargs="+",
-        default=[0, 1, 2],
-        help="Detector indices to process",
-    )
-    parser.add_argument(
-        "--compression",
-        type=bool,
-        default=True,
-        help="Compress reduced output with bitshuffle/lz4",
-    )
 
+
+def main() -> None:
+    from .._executable_helper import build_logger, build_reduction_arg_parser
+
+    parser = build_reduction_arg_parser()
+    _add_mcstas_args(parser)
     args = parser.parse_args()
 
     input_file = pathlib.Path(args.input_file).resolve()
     output_file = pathlib.Path(args.output_file).resolve()
 
-    logger = logging.getLogger(__name__)
-    if args.verbose:
-        logger.setLevel(logging.INFO)
-        logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger = build_logger(args)
 
     wf = McStasWorkflow()
     reduction(
