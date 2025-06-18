@@ -22,6 +22,59 @@ from .types import (
 )
 
 
+def _fallback_compute_positions(dg: sc.DataGroup) -> sc.DataGroup:
+    import warnings
+
+    import scippnexus as snx
+
+    warnings.warn(
+        "Using fallback compute_positions due to empty log entries. "
+        "This may lead to incorrect results. Please check the data carefully."
+        "The fallback will replace empty logs with a single time point"
+        "with value of zero."
+        "It also drops all coordinates except 'time'."
+        "to handle scalar transformations.",
+        UserWarning,
+        stacklevel=2,
+    )
+
+    empty_transformations = [
+        transformation
+        for transformation in dg['depends_on'].transformations.values()
+        if 'time' in transformation.value.dims
+        and transformation.sizes['time'] == 0  # empty log
+    ]
+    for transformation in empty_transformations:
+        new_value = transformation.value.copy()
+        orig_t_coord = new_value.coords['time']
+        t_coord = sc.zeros(
+            dims=['time'], shape=(1,), unit=orig_t_coord.unit, dtype=orig_t_coord.dtype
+        )
+        new_value = sc.DataArray(
+            data=sc.zeros(
+                dims=['time'], shape=(1,), unit=new_value.unit, dtype=new_value.dtype
+            ),
+            coords={
+                'time': t_coord
+            },  # Drop other coordinates because of scalar transformation value
+        )
+        transformation.value = new_value
+    return snx.compute_positions(dg)
+
+
+def _compute_positions(
+    dg: sc.DataGroup, ignore_empty_logs: bool = False
+) -> sc.DataGroup:
+    import scippnexus as snx
+
+    try:
+        return snx.compute_positions(dg)
+    except ValueError as e:
+        if ignore_empty_logs:
+            return _fallback_compute_positions(dg)
+        raise e
+
+
 def _create_dataset_from_string(*, root_entry: h5py.Group, name: str, var: str) -> None:
     root_entry.create_dataset(name, dtype=h5py.string_dtype(), data=var)
 
