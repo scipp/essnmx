@@ -268,6 +268,12 @@ def _add_mcstas_args(parser: argparse.ArgumentParser) -> None:
         default=None,
         help="Maximum Counts",
     )
+    mcstas_arg_group.add_argument(
+        "--chunk_size",
+        type=int,
+        default=10_000_000,
+        help="Chunk size for processing (number of events per chunk)",
+    )
 
 
 def main() -> None:

@@ -7,17 +7,12 @@ import sys
 
 def build_reduction_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Command line arguments for the NMX reduction."
+        description="Command line arguments for the NMX reduction. "
+        "It assumes 14 Hz pulse speed."
     )
     input_arg_group = parser.add_argument_group("Input Options")
     input_arg_group.add_argument(
         "--input_file", type=str, help="Path to the input file", required=True
-    )
-    input_arg_group.add_argument(
-        "--chunk_size",
-        type=int,
-        default=10_000_000,
-        help="Chunk size for processing",
     )
     input_arg_group.add_argument(
         "--nbins",
