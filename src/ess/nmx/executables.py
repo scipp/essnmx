@@ -188,6 +188,7 @@ def reduction(
             experiment_metadata=experiment_metadata,
             output_file=output_file,
         )
+        detector_grs = {}
         for det_name, det_group in detector_id_map.items():
             display(f"Processing {det_name}")
             if chunk_size <= 0:
@@ -267,8 +268,10 @@ def reduction(
             _export_reduced_data_as_nxlauetof(
                 dg, output_file=output_file, compress_counts=compression
             )
+            detector_grs[det_name] = dg
 
     display("Reduction completed successfully.")
+    return sc.DataGroup(detector_grs)
 
 
 def _add_ess_reduction_args(arg: argparse.ArgumentParser) -> None:
