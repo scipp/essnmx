@@ -61,7 +61,6 @@ class DetectorDesc:
     step_y: sc.Variable  # 'ystep'
     start_x: float  # 'xstart'
     start_y: float  # 'ystart'
-    # From <location> under <component type="MonNDtype-n" ...>
     position: sc.Variable  # <location> 'x', 'y', 'z'
     # Calculated fields
     rotation_matrix: sc.Variable
