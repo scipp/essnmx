@@ -45,7 +45,7 @@ def _fallback_compute_positions(dg: sc.DataGroup) -> sc.DataGroup:
         orig_value = transformation.value
         orig_value = sc.scalar(0, unit=orig_value.unit, dtype=orig_value.dtype)
         transformation.value = orig_value
-    return snx.compute_positions(dg)
+    return snx.compute_positions(dg, store_transform='transform_matrix')
 
 
 def _compute_positions(
@@ -82,7 +82,7 @@ def _compute_positions(
     import scippnexus as snx
 
     try:
-        return snx.compute_positions(dg)
+        return snx.compute_positions(dg, store_transform='transform_matrix')
     except ValueError as e:
         if auto_fix_transformations:
             return _fallback_compute_positions(dg)
@@ -495,6 +495,16 @@ def _export_detector_metadata_as_nxlauetof(
             _add_lauetof_detector_group(detector_metadata, nx_instrument)
 
 
+def _extract_counts(dg: sc.DataGroup) -> sc.Variable:
+    counts: sc.DataArray = dg['counts'].data
+    if 'id' in counts.dims:
+        num_x, num_y = dg["detector_shape"].value
+        return sc.fold(counts, dim='id', sizes={'x': num_x, 'y': num_y})
+    else:
+        # If there is no 'id' dimension, we assume it is already in the correct shape
+        return counts
+
+
 def _export_reduced_data_as_nxlauetof(
     dg: NMXReducedDataGroup,
     output_file: str | pathlib.Path | io.BytesIO,
@@ -538,9 +548,7 @@ def _export_reduced_data_as_nxlauetof(
             data_dset = _create_compressed_dataset(
                 name="data",
                 root_entry=nx_detector,
-                var=sc.fold(
-                    dg['counts'].data, dim='id', sizes={'x': num_x, 'y': num_y}
-                ),
+                var=_extract_counts(dg),
                 chunks=(num_x, num_y, 1),
                 dtype=np.uint,
             )
@@ -548,9 +556,7 @@ def _export_reduced_data_as_nxlauetof(
             data_dset = _create_dataset_from_var(
                 name="data",
                 root_entry=nx_detector,
-                var=sc.fold(
-                    dg['counts'].data, dim='id', sizes={'x': num_x, 'y': num_y}
-                ),
+                var=_extract_counts(dg),
                 dtype=np.uint,
             )
         data_dset.attrs["signal"] = 1
