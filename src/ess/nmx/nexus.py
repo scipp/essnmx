@@ -30,10 +30,7 @@ def _fallback_compute_positions(dg: sc.DataGroup) -> sc.DataGroup:
     warnings.warn(
         "Using fallback compute_positions due to empty log entries. "
         "This may lead to incorrect results. Please check the data carefully."
-        "The fallback will replace empty logs with a single time point"
-        "with value of zero."
-        "It also drops all coordinates except 'time'."
-        "to handle scalar transformations.",
+        "The fallback will replace empty logs with a scalar value of zero.",
         UserWarning,
         stacklevel=2,
     )
@@ -45,32 +42,49 @@ def _fallback_compute_positions(dg: sc.DataGroup) -> sc.DataGroup:
         and transformation.sizes['time'] == 0  # empty log
     ]
     for transformation in empty_transformations:
-        new_value = transformation.value.copy()
-        orig_t_coord = new_value.coords['time']
-        t_coord = sc.zeros(
-            dims=['time'], shape=(1,), unit=orig_t_coord.unit, dtype=orig_t_coord.dtype
-        )
-        new_value = sc.DataArray(
-            data=sc.zeros(
-                dims=['time'], shape=(1,), unit=new_value.unit, dtype=new_value.dtype
-            ),
-            coords={
-                'time': t_coord
-            },  # Drop other coordinates because of scalar transformation value
-        )
-        transformation.value = new_value
+        orig_value = transformation.value
+        orig_value = sc.scalar(0, unit=orig_value.unit, dtype=orig_value.dtype)
+        transformation.value = orig_value
     return snx.compute_positions(dg)
 
 
 def _compute_positions(
-    dg: sc.DataGroup, ignore_empty_logs: bool = False
+    dg: sc.DataGroup, auto_fix_transformations: bool = False
 ) -> sc.DataGroup:
+    """Compute positions of the data group from transformations.
+
+    Wraps the `scippnexus.compute_positions` function
+    and provides a fallback for cases where the transformations
+    contain empty logs.
+
+    Parameters
+    ----------
+    dg:
+        Data group containing the transformations and data.
+    auto_fix_transformations:
+        If `True`, it will attempt to fix empty transformations.
+        It will replace them with a scalar value of zero.
+        It is because adding a time dimension will make it not possible
+        to compute positions of children due to time-dependent transformations.
+
+    Returns
+    -------
+    :
+        Data group with computed positions.
+
+    Warnings
+    --------
+    If `auto_fix_transformations` is `True`, it will warn about the fallback
+    being used due to empty logs or scalar transformations.
+    This is because the fallback may lead to incorrect results.
+
+    """
     import scippnexus as snx
 
     try:
         return snx.compute_positions(dg)
     except ValueError as e:
-        if ignore_empty_logs:
+        if auto_fix_transformations:
             return _fallback_compute_positions(dg)
         raise e
 
