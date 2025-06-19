@@ -147,6 +147,54 @@ def reduction(
     toa_bin_edges: sc.Variable | int = 250,
     display: Callable | None = None,  # For Jupyter notebook display
 ) -> sc.DataGroup:
+    """Reduce NMX data from a Nexus file and export to NXLauetof(ESS NMX specific) file.
+
+    This workflow is written as a flatten function without using sciline Pipeline.
+    It is because the first part of NMX reduction only requires
+    a few steps of processing and it is overkill to use a Pipeline or GenericWorkflow.
+
+    We also do not apply frame unwrapping or pulse skipping here,
+    as it is not expected from NMX experiments.
+
+    Frame unwrapping may be applied later on the result of this function if needed
+    however, then the whole range of `event_time_offset` should have been histogrammed
+    so that the unwrapping can be applied.
+    i.e. `min_toa` should be 0 and `max_toa` should be 1/14 seconds
+    for 14 Hz pulse frequency.
+
+    Parameters
+    ----------
+    input_file:
+        Path to the input Nexus file containing NMX data.
+    output_file:
+        Path to the output file where reduced data will be saved.
+    chunk_size:
+        Number of pulses to process in each chunk. If <= 0, all data is processed
+        at once. It represents the number of event_time_zero entries to read at once.
+    detector_ids:
+        List of detector IDs (as integers or names) to process.
+    compression:
+        If True, the output data will be compressed.
+    logger:
+        Logger to use for logging messages. If None, a default logger is created.
+    min_toa:
+        Minimum time of arrival (TOA) in milliseconds. Default is 0 ms.
+    max_toa:
+        Maximum time of arrival (TOA) in milliseconds. Default is 1/14 seconds,
+        typical for ESS NMX.
+    toa_bin_edges:
+        Number of time of arrival (TOA) bin edges or a scipp Variable defining the
+        edges. Default is 250 edges.
+    display:
+        Callable for displaying messages, useful in Jupyter notebooks. If None,
+        defaults to logger.info.
+
+    Returns
+    -------
+    sc.DataGroup:
+        A DataGroup containing the reduced data for each selected detector.
+
+    """
     import ipywidgets as widgets
     import scippnexus as snx
 
