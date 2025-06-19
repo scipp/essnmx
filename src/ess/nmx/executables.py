@@ -115,16 +115,21 @@ def calculate_number_of_chunks(detector_gr: snx.Group, *, chunk_size: int = 0) -
 
 
 def build_toa_bin_edges(
+    *,
+    min_toa: sc.Variable | int = 0,
+    max_toa: sc.Variable | int = int((1 / 14) * 1_000),  # Default for ESS NMX
     toa_bin_edges: sc.Variable | int = 250,
 ) -> sc.Variable:
     if isinstance(toa_bin_edges, sc.Variable):
         return toa_bin_edges
     elif isinstance(toa_bin_edges, int):
+        min_toa = sc.scalar(min_toa, unit='ms') if isinstance(min_toa, int) else min_toa
+        max_toa = sc.scalar(max_toa, unit='ms') if isinstance(max_toa, int) else max_toa
         return sc.linspace(
             dim='event_time_offset',
-            start=0,
-            stop=1 / 14,
-            unit='s',
+            start=min_toa.value,
+            stop=max_toa.to(unit=min_toa.unit).value,
+            unit=min_toa.unit,
             num=toa_bin_edges + 1,
         )
 
@@ -137,6 +142,8 @@ def reduction(
     detector_ids: list[int | str],
     compression: bool = False,
     logger: logging.Logger | None = None,
+    min_toa: sc.Variable | int = 0,
+    max_toa: sc.Variable | int = int((1 / 14) * 1_000),  # Default for ESS NMX
     toa_bin_edges: sc.Variable | int = 250,
     display: Callable | None = None,  # For Jupyter notebook display
 ) -> sc.DataGroup:
@@ -148,6 +155,9 @@ def reduction(
     if display is None:
         display = logger.info
 
+    toa_bin_edges = build_toa_bin_edges(
+        min_toa=min_toa, max_toa=max_toa, toa_bin_edges=toa_bin_edges
+    )
     with snx.File(input_file) as f:
         intrument_group = f['entry/instrument']
         dets = intrument_group[snx.NXdetector]
@@ -220,6 +230,9 @@ def reduction(
             )
 
             da: sc.DataArray = dg['data']
+            toa_bin_edges = toa_bin_edges.to(
+                unit=da.bins.coords['event_time_offset'].unit
+            )
             if chunk_size <= 0:
                 counts = da.hist(event_time_offset=toa_bin_edges).rename_dims(
                     x_pixel_offset='x', y_pixel_offset='y', event_time_offset='t'
@@ -255,6 +268,8 @@ def reduction(
                     )
                     cur_counts.coords['t'] = cur_counts.coords['event_time_offset']
                     counts += cur_counts
+                    display("Accumulated counts:")
+                    display(counts.sum().data)
 
             dg = sc.DataGroup(
                 counts=counts,
@@ -281,6 +296,18 @@ def _add_ess_reduction_args(arg: argparse.ArgumentParser) -> None:
         default=1_000,
         help="Chunk size for processing (number of pulses per chunk).",
     )
+    argument_group.add_argument(
+        "--min-toa",
+        type=int,
+        default=0,
+        help="Minimum time of arrival (TOA) in ms.",
+    )
+    argument_group.add_argument(
+        "--max-toa",
+        type=int,
+        default=int((1 / 14) * 1_000),
+        help="Maximum time of arrival (TOA) in ms.",
+    )
 
 
 def main() -> None:
@@ -304,5 +331,7 @@ def main() -> None:
         detector_ids=args.detector_ids,
         compression=args.compression,
         toa_bin_edges=args.nbins,
+        min_toa=sc.scalar(args.min_toa, unit='ms'),
+        max_toa=sc.scalar(args.max_toa, unit='ms'),
         logger=logger,
     )
