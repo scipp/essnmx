@@ -37,9 +37,10 @@ def build_reduction_arg_parser() -> argparse.ArgumentParser:
     )
     output_arg_group.add_argument(
         "--compression",
-        type=bool,
-        default=True,
-        help="Compress reduced output with bitshuffle/lz4",
+        type=int,
+        default=1,
+        choices=[0, 1],
+        help="Compress reduced output. 0: No Compression, 1: bitshuffle/lz4",
     )
     output_arg_group.add_argument(
         "--verbose", "-v", action="store_true", help="Increase output verbosity"

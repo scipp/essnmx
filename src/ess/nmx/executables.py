@@ -5,6 +5,7 @@ import logging
 import pathlib
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Literal
 
 import scipp as sc
 import scippnexus as snx
@@ -30,11 +31,12 @@ def _retrieve_sample_position(file: snx.File) -> sc.Variable:
 
 
 def _decide_fast_axis(da: sc.DataArray) -> str:
-    x_slice = da['x_pixel_offset', 0]
-    y_slice = da['y_pixel_offset', 0]
+    x_slice = da['x_pixel_offset', 0].coords['detector_number']
+    y_slice = da['y_pixel_offset', 0].coords['detector_number']
+
     if (x_slice.max() < y_slice.max()).value:
         return 'y'
-    elif x_slice.max() > y_slice.max().value:
+    elif (x_slice.max() > y_slice.max()).value:
         return 'x'
     else:
         raise ValueError(
@@ -70,19 +72,21 @@ class DetectorDesc:
     slow_axis: sc.Variable
 
 
-def build_detector_desc(name: str, dg: sc.DataGroup) -> DetectorDesc:
+def build_detector_desc(
+    name: str, dg: sc.DataGroup, *, fast_axis: Literal['x', 'y'] | None = None
+) -> DetectorDesc:
     da: sc.DataArray = dg['data']
-    fast_axis = _decide_fast_axis(da)
+    _fast_axis = fast_axis if fast_axis is not None else _decide_fast_axis(da)
     transformation_matrix = dg['transform_matrix']
     t_unit = transformation_matrix.unit
     fast_axis_vector = (
         sc.vector([1, 0, 0], unit=t_unit)
-        if fast_axis == 'x'
+        if _fast_axis == 'x'
         else sc.vector([0, 1, 0], unit=t_unit)
     )
     slow_axis_vector = (
         sc.vector([0, 1, 0], unit=t_unit)
-        if fast_axis == 'x'
+        if _fast_axis == 'x'
         else sc.vector([1, 0, 0], unit=t_unit)
     )
     return DetectorDesc(
@@ -94,8 +98,8 @@ def build_detector_desc(name: str, dg: sc.DataGroup) -> DetectorDesc:
         start_y=da.coords['y_pixel_offset'].min().value,
         position=dg['position'],
         rotation_matrix=dg['transform_matrix'],
-        fast_axis_name=fast_axis,
-        slow_axis_name='x' if fast_axis == 'y' else 'y',
+        fast_axis_name=_fast_axis,
+        slow_axis_name='x' if _fast_axis == 'y' else 'y',
         fast_axis=fast_axis_vector,
         slow_axis=slow_axis_vector,
         step_x=_decide_step(da.coords['x_pixel_offset']),
@@ -145,6 +149,7 @@ def reduction(
     min_toa: sc.Variable | int = 0,
     max_toa: sc.Variable | int = int((1 / 14) * 1_000),  # Default for ESS NMX
     toa_bin_edges: sc.Variable | int = 250,
+    fast_axis: Literal['x', 'y'] | None = None,  # 'x', 'y', or None to auto-detect
     display: Callable | None = None,  # For Jupyter notebook display
 ) -> sc.DataGroup:
     """Reduce NMX data from a Nexus file and export to NXLauetof(ESS NMX specific) file.
@@ -254,8 +259,9 @@ def reduction(
                 # Slice the first chunk for metadata extraction
                 dg = det_group['event_time_zero', 0:chunk_size]
 
+            display("Computing detector positions...")
             display(dg := _compute_positions(dg, auto_fix_transformations=True))
-            detector = build_detector_desc(det_name, dg)
+            detector = build_detector_desc(det_name, dg, fast_axis=fast_axis)
             detector_meta = sc.DataGroup(
                 {
                     'fast_axis': detector.fast_axis,
@@ -356,6 +362,14 @@ def _add_ess_reduction_args(arg: argparse.ArgumentParser) -> None:
         default=int((1 / 14) * 1_000),
         help="Maximum time of arrival (TOA) in ms.",
     )
+    argument_group.add_argument(
+        "--fast-axis",
+        type=str,
+        choices=['x', 'y', None],
+        default=None,
+        help="Specify the fast axis of the detector. If None, it will be determined "
+        "automatically based on the pixel offsets.",
+    )
 
 
 def main() -> None:
@@ -381,5 +395,6 @@ def main() -> None:
         toa_bin_edges=args.nbins,
         min_toa=sc.scalar(args.min_toa, unit='ms'),
         max_toa=sc.scalar(args.max_toa, unit='ms'),
+        fast_axis=args.fast_axis,
         logger=logger,
     )
