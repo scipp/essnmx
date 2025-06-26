@@ -200,7 +200,6 @@ def reduction(
         A DataGroup containing the reduced data for each selected detector.
 
     """
-    import ipywidgets as widgets
     import scippnexus as snx
 
     if logger is None:
@@ -215,7 +214,7 @@ def reduction(
         intrument_group = f['entry/instrument']
         dets = intrument_group[snx.NXdetector]
         detector_group_keys = list(dets.keys())
-        display(widgets.Label(f"Found NXdetectors: {detector_group_keys}"))
+        display(f"Found NXdetectors: {detector_group_keys}")
         detector_id_map = {
             det_name: dets[det_name]
             for i, det_name in enumerate(detector_group_keys)
@@ -227,7 +226,7 @@ def reduction(
                 f"Found {detector_group_keys}\n"
                 f"Try using integer indices instead of names."
             )
-        display(widgets.Label(f"Selected detectors: {list(detector_id_map.keys())}"))
+        display(f"Selected detectors: {list(detector_id_map.keys())}")
         source_position = _retrieve_source_position(f)
         sample_position = _retrieve_sample_position(f)
         experiment_metadata = NMXExperimentMetadata(
@@ -284,9 +283,9 @@ def reduction(
             )
 
             da: sc.DataArray = dg['data']
-            toa_bin_edges = toa_bin_edges.to(
-                unit=da.bins.coords['event_time_offset'].unit
-            )
+            event_time_offset_unit = da.bins.coords['event_time_offset'].unit
+            display("Event time offset unit: %s", event_time_offset_unit)
+            toa_bin_edges = toa_bin_edges.to(unit=event_time_offset_unit, copy=False)
             if chunk_size <= 0:
                 counts = da.hist(event_time_offset=toa_bin_edges).rename_dims(
                     x_pixel_offset='x', y_pixel_offset='y', event_time_offset='t'
