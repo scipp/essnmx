@@ -283,7 +283,9 @@ def reduction(
             )
 
             da: sc.DataArray = dg['data']
-            event_time_offset_unit = da.bins.coords['event_time_offset'].unit
+            display("Event time offset coordinates:")
+            display(da.bins.coords['event_time_offset'])
+            event_time_offset_unit = da.bins.coords['event_time_offset'].unit or 'ns'
             display("Event time offset unit: %s", event_time_offset_unit)
             toa_bin_edges = toa_bin_edges.to(unit=event_time_offset_unit, copy=False)
             if chunk_size <= 0:
@@ -346,7 +348,7 @@ def _add_ess_reduction_args(arg: argparse.ArgumentParser) -> None:
     argument_group.add_argument(
         "--chunk_size",
         type=int,
-        default=1_000,
+        default=-1,
         help="Chunk size for processing (number of pulses per chunk).",
     )
     argument_group.add_argument(
