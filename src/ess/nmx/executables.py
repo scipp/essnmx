@@ -283,7 +283,7 @@ def reduction(
             )
 
             da: sc.DataArray = dg['data']
-            event_time_offset_unit = da.bins.coords['event_time_offset'].unit
+            event_time_offset_unit = da.bins.coords['event_time_offset'].bins.unit
             display("Event time offset unit: %s", event_time_offset_unit)
             toa_bin_edges = toa_bin_edges.to(unit=event_time_offset_unit, copy=False)
             if chunk_size <= 0:
