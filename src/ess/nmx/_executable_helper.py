@@ -17,7 +17,7 @@ def build_reduction_arg_parser() -> argparse.ArgumentParser:
     input_arg_group.add_argument(
         "--nbins",
         type=int,
-        default=51,
+        default=50,
         help="Number of TOF bins",
     )
     input_arg_group.add_argument(

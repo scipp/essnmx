@@ -138,7 +138,7 @@ def reduction(
     input_file: pathlib.Path,
     output_file: pathlib.Path,
     chunk_size: int = 10_000_000,
-    nbins: int = 51,
+    nbins: int = 50,
     max_counts: int | None = None,
     detector_ids: list[int | str],
     compression: bool = True,
@@ -160,7 +160,10 @@ def reduction(
             logger.info("Metadata retrieved: %s", data_metadata)
 
         toa_bin_edges = sc.linspace(
-            dim='t', start=data_metadata.min_toa, stop=data_metadata.max_toa, num=nbins
+            dim='t',
+            start=data_metadata.min_toa,
+            stop=data_metadata.max_toa,
+            num=nbins + 1,
         )
         scale_factor = mcstas_weight_to_probability_scalefactor(
             max_counts=wf.compute(MaximumCounts),
@@ -172,7 +175,7 @@ def reduction(
         toa_min = sc.scalar(toa_min_max_prob[0], unit='s')
         toa_max = sc.scalar(toa_min_max_prob[1], unit='s')
         prob_max = sc.scalar(toa_min_max_prob[2])
-        toa_bin_edges = sc.linspace(dim='t', start=toa_min, stop=toa_max, num=nbins)
+        toa_bin_edges = sc.linspace(dim='t', start=toa_min, stop=toa_max, num=nbins + 1)
         scale_factor = mcstas_weight_to_probability_scalefactor(
             max_counts=wf.compute(MaximumCounts),
             max_probability=prob_max,
