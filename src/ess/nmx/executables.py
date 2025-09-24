@@ -17,7 +17,7 @@ from .nexus import (
     _export_static_metadata_as_nxlauetof,
 )
 from .streaming import _validate_chunk_size
-from .types import NMXDetectorMetadata, NMXExperimentMetadata
+from .types import Compression, NMXDetectorMetadata, NMXExperimentMetadata
 
 
 def _retrieve_source_position(file: snx.File) -> sc.Variable:
@@ -144,7 +144,7 @@ def reduction(
     output_file: pathlib.Path,
     chunk_size: int = 1_000,
     detector_ids: list[int | str],
-    compression: bool = False,
+    compression: Compression = Compression.BITSHUFFLE_LZ4,
     logger: logging.Logger | None = None,
     min_toa: sc.Variable | int = 0,
     max_toa: sc.Variable | int = int((1 / 14) * 1_000),  # Default for ESS NMX
@@ -333,7 +333,9 @@ def reduction(
             display(dg)
             display("Saving reduced data to Nexus file...")
             _export_reduced_data_as_nxlauetof(
-                dg, output_file=output_file, compress_counts=compression
+                dg,
+                output_file=output_file,
+                compress_counts=(compression == Compression.NONE),
             )
             detector_grs[det_name] = dg
 
@@ -390,7 +392,7 @@ def main() -> None:
         output_file=output_file,
         chunk_size=args.chunk_size,
         detector_ids=args.detector_ids,
-        compression=args.compression,
+        compression=Compression[args.compression],
         toa_bin_edges=args.nbins,
         min_toa=sc.scalar(args.min_toa, unit='ms'),
         max_toa=sc.scalar(args.max_toa, unit='ms'),

@@ -4,6 +4,8 @@ import argparse
 import logging
 import sys
 
+from .types import Compression
+
 
 def build_reduction_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -37,10 +39,10 @@ def build_reduction_arg_parser() -> argparse.ArgumentParser:
     )
     output_arg_group.add_argument(
         "--compression",
-        type=int,
-        default=1,
-        choices=[0, 1],
-        help="Compress reduced output. 0: No Compression, 1: bitshuffle/lz4",
+        type=Compression,
+        default=Compression.BITSHUFFLE_LZ4.name,
+        choices=[compression_key.name for compression_key in Compression],
+        help="Compress option of reduced output file. Default: BITSHUFFLE_LZ4",
     )
     output_arg_group.add_argument(
         "--verbose", "-v", action="store_true", help="Increase output verbosity"

@@ -23,6 +23,7 @@ from ..nexus import (
 )
 from ..streaming import calculate_number_of_chunks
 from ..types import (
+    Compression,
     DetectorIndex,
     DetectorName,
     FilePath,
@@ -141,7 +142,7 @@ def reduction(
     nbins: int = 50,
     max_counts: int | None = None,
     detector_ids: list[int | str],
-    compression: bool = True,
+    compression: Compression = Compression.BITSHUFFLE_LZ4,
     wf: sl.Pipeline | None = None,
     logger: logging.Logger | None = None,
     toa_min_max_prob: tuple[float] | None = None,
@@ -255,8 +256,11 @@ def reduction(
         result_list.append(result)
         if logger is not None:
             logger.info("Appending reduced data into the output file %s", output_file)
+
         _export_reduced_data_as_nxlauetof(
-            result, output_file=output_file, compress_counts=compression
+            result,
+            output_file=output_file,
+            compress_counts=(compression == Compression.NONE),
         )
     from ess.nmx.reduction import merge_panels
 
@@ -299,7 +303,7 @@ def main() -> None:
         nbins=args.nbins,
         max_counts=args.max_counts,
         detector_ids=args.detector_ids,
-        compression=args.compression,
+        compression=Compression[args.compression],
         logger=logger,
         wf=wf,
     )
