@@ -39,7 +39,7 @@ def build_reduction_arg_parser() -> argparse.ArgumentParser:
     )
     output_arg_group.add_argument(
         "--compression",
-        type=Compression,
+        type=str,
         default=Compression.BITSHUFFLE_LZ4.name,
         choices=[compression_key.name for compression_key in Compression],
         help="Compress option of reduced output file. Default: BITSHUFFLE_LZ4",
