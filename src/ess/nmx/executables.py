@@ -166,6 +166,7 @@ def reduction(
     so that the unwrapping can be applied.
     i.e. `min_toa` should be 0 and `max_toa` should be 1/14 seconds
     for 14 Hz pulse frequency.
+    TODO: Implement tof/wavelength workflow for NMX.
 
     Parameters
     ----------
