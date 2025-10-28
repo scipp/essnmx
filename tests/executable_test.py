@@ -39,7 +39,11 @@ def test_executable_runs(small_nmx_nexus_path, tmp_path: pathlib.Path):
     nbins = 20  # Small number of bins for testing.
     # The output has 1280x1280 pixels per detector per time bin.
     expected_toa_bins = sc.linspace(
-        dim='dim_0', start=0, stop=int((1 / 14) * 1_000), num=nbins + 1, unit='ms'
+        dim='dim_0',
+        start=2,  # Unrealistic number for testing
+        stop=int((1 / 15) * 1_000),  # Unrealistic number for testing
+        num=nbins + 1,
+        unit='ms',
     )
     expected_toa_output = sc.midpoints(expected_toa_bins, dim='dim_0').to(unit='ns')
 
