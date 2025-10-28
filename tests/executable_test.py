@@ -57,7 +57,7 @@ def test_executable_runs(small_nmx_nexus_path, tmp_path: pathlib.Path):
         str(int(expected_toa_bins.max().value)),
     )
     # Validate that all commands are strings and contain no unsafe characters
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(  # noqa: S603 - We are not accepting arbitrary input here.
         commands,
         text=True,
         capture_output=True,
