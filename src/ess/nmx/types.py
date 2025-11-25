@@ -87,3 +87,10 @@ class Compression(enum.StrEnum):
 
     NONE = 'NONE'
     BITSHUFFLE_LZ4 = 'BITSHUFFLE_LZ4'
+
+
+TofSimulationMinWavelength = NewType("TofSimulationMinWavelength", sc.Variable)
+"""Minimum wavelength for tof simulation to calculate look up table."""
+
+TofSimulationMaxWavelength = NewType("TofSimulationMaxWavelength", sc.Variable)
+"""Maximum wavelength for tof simulation to calculate look up table."""

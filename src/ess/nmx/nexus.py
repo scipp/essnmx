@@ -357,7 +357,9 @@ def _add_lauetof_sample_group(dg: NMXExperimentMetadata, nx_entry: h5py.Group) -
     _create_dataset_from_string(
         root_entry=nx_sample,
         name='name',
-        var=dg['sample_name'].value,
+        var=dg['sample_name']
+        if isinstance(dg['sample_name'], str)
+        else dg['sample_name'].value,
     )
     _create_dataset_from_var(
         name='orientation_matrix',

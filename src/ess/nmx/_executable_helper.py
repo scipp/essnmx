@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 
-from .types import Compression
+from ._configurations import InputConfig, OutputConfig, WorkflowConfig
 
 
 def _validate_annotation(annotation) -> TypeGuard[type]:
@@ -155,118 +155,12 @@ def from_args(cls: type[T], args: argparse.Namespace) -> T:
     return cls(**kwargs)
 
 
-class InputConfig(BaseModel):
-    # Add title of the basemodel
-    model_config = {"title": "Input Configuration"}
-    # File IO
-    input_file: list[str] = Field(
-        title="Input File",
-        description="Path to the input file. If multiple file paths are given,"
-        " the output(histogram) will be merged(summed) "
-        "and will not save individual outputs per input file. ",
-    )
-    swmr: bool = Field(
-        title="SWMR Mode",
-        description="Open the input file in SWMR mode",
-        default=False,
-    )
-    # Detector selection
-    detector_ids: list[int] = Field(
-        title="Detector IDs",
-        description="Detector indices to process",
-        default=[0, 1, 2],
-    )
-    # Chunking options
-    iter_chunk: bool = Field(
-        title="Iterate in Chunks",
-        description="Whether to process the input file in chunks "
-        " based on the hdf5 dataset chunk size. "
-        "It is ignored if hdf5 dataset is not chunked. "
-        "If True, it overrides chunk-size-pulse and chunk-size-events options.",
-        default=False,
-    )
-    chunk_size_pulse: int = Field(
-        title="Chunk Size Pulse",
-        description="Number of pulses to process in each chunk. "
-        "If 0 or negative, process all pulses at once.",
-        default=0,
-    )
-    chunk_size_events: int = Field(
-        title="Chunk Size Events",
-        description="Number of events to process in each chunk. "
-        "If 0 or negative, process all events at once."
-        "If both chunk-size-pulse and chunk-size-events are set, "
-        "chunk-size-pulse is preferred.",
-        default=0,
-    )
-
-
-class TOAUnit(enum.StrEnum):
-    ms = 'ms'
-    us = 'us'
-    ns = 'ns'
-
-
-class WorkflowConfig(BaseModel):
-    # Add title of the basemodel
-    model_config = {"title": "Workflow Configuration"}
-    nbins: int = Field(
-        title="Number of TOF Bins",
-        description="Number of TOF bins",
-        default=50,
-    )
-    min_toa: int = Field(
-        title="Minimum Time of Arrival",
-        description="Minimum time of arrival (TOA) in [toa_unit].",
-        default=0,
-    )
-    max_toa: int = Field(
-        title="Maximum Time of Arrival",
-        description="Maximum time of arrival (TOA) in [toa_unit].",
-        default=int((1 / 14) * 1_000),
-    )
-    toa_unit: TOAUnit = Field(
-        title="Unit of TOA",
-        description="Unit of TOA.",
-        default=TOAUnit.ms,
-    )
-    fast_axis: Literal['x', 'y'] | None = Field(
-        title="Fast Axis",
-        description="Specify the fast axis of the detector. "
-        "If None, it will be determined "
-        "automatically based on the pixel offsets.",
-        default=None,
-    )
-
-
-class OutputConfig(BaseModel):
-    # Add title of the basemodel
-    model_config = {"title": "Output Configuration"}
-    # Log verbosity
-    verbose: bool = Field(
-        title="Verbose Logging",
-        description="Increase output verbosity.",
-        default=False,
-    )
-    # File output
-    output_file: str = Field(
-        title="Output File",
-        description="Path to the output file.",
-        default="scipp_output.h5",
-    )
-    compression: Compression = Field(
-        title="Compression",
-        description="Compress option of reduced output file.",
-        default=Compression.BITSHUFFLE_LZ4,
-    )
-
-
 class ReductionConfig(BaseModel):
     """Container for all reduction configurations."""
 
     inputs: InputConfig
-    workflow: WorkflowConfig
-    output: OutputConfig
+    workflow: WorkflowConfig = Field(default_factory=WorkflowConfig)
+    output: OutputConfig = Field(default_factory=OutputConfig)
 
     @classmethod
     def build_argument_parser(cls) -> argparse.ArgumentParser:
