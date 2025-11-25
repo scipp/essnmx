@@ -21,14 +21,15 @@ from ess.reduce.time_of_flight import (
     TofDetector,
 )
 
-from ._configurations import InputConfig, WorkflowConfig
 from ._executable_helper import (
     ReductionConfig,
     build_logger,
+    build_reduction_argument_parser,
     collect_matching_input_files,
+    reduction_config_from_args,
 )
+from .configuration import InputConfig, WorkflowConfig
 from .nexus import (
-    _compute_positions,
     _export_static_metadata_as_nxlauetof,
 )
 from .streaming import _validate_chunk_size
@@ -44,16 +45,6 @@ from .workflows import (
     map_file_names,
     select_detector_names,
 )
-
-
-def _retrieve_source_position(file: snx.File) -> sc.Variable:
-    da = file['entry/instrument/source'][()]
-    return _compute_positions(da, auto_fix_transformations=True)['position']
-
-
-def _retrieve_sample_position(file: snx.File) -> sc.Variable:
-    da = file['entry/sample'][()]
-    return _compute_positions(da, auto_fix_transformations=True)['position']
 
 
 def _retrieve_crystal_rotation(
@@ -464,8 +455,8 @@ def reduction(
 
 
 def main() -> None:
-    parser = ReductionConfig.build_argument_parser()
-    config = ReductionConfig.from_args(parser.parse_args())
+    parser = build_reduction_argument_parser()
+    config: ReductionConfig = reduction_config_from_args(parser.parse_args())
 
     input_file = collect_matching_input_files(*config.inputs.input_file)
     output_file = pathlib.Path(config.output.output_file).resolve()

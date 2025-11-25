@@ -74,8 +74,8 @@ class WorkflowConfig(BaseModel):
         default=TimeBinCoordinate.event_time_offset,
     )
     nbins: int = Field(
-        title="Number of TOF Bins",
-        description="Number of TOF bins",
+        title="Number of Time Bins",
+        description="Number of Time bins",
         default=50,
     )
     min_time_bin: int | None = Field(
@@ -138,3 +138,15 @@ class OutputConfig(BaseModel):
         description="Compress option of reduced output file.",
         default=Compression.BITSHUFFLE_LZ4,
     )
+
+
+class ReductionConfig(BaseModel):
+    """Container for all reduction configurations."""
+
+    inputs: InputConfig
+    workflow: WorkflowConfig = Field(default_factory=WorkflowConfig)
+    output: OutputConfig = Field(default_factory=OutputConfig)
+
+    @property
+    def _children(self) -> list[BaseModel]:
+        return [self.inputs, self.workflow, self.output]

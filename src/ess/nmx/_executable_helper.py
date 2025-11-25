@@ -10,11 +10,11 @@ from functools import partial
 from types import UnionType
 from typing import Literal, TypeGuard, TypeVar, Union, get_args, get_origin
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 
-from ._configurations import InputConfig, OutputConfig, WorkflowConfig
+from .configuration import InputConfig, OutputConfig, ReductionConfig, WorkflowConfig
 
 
 def _validate_annotation(annotation) -> TypeGuard[type]:
@@ -155,68 +155,59 @@ def from_args(cls: type[T], args: argparse.Namespace) -> T:
     return cls(**kwargs)
 
 
-class ReductionConfig(BaseModel):
-    """Container for all reduction configurations."""
+def build_reduction_argument_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Command line arguments for the ESS NMX reduction. "
+        "It assumes 14 Hz pulse speed."
+    )
+    parser = add_args_from_pydantic_model(model_cls=InputConfig, parser=parser)
+    parser = add_args_from_pydantic_model(model_cls=WorkflowConfig, parser=parser)
+    parser = add_args_from_pydantic_model(model_cls=OutputConfig, parser=parser)
+    return parser
 
-    inputs: InputConfig
-    workflow: WorkflowConfig = Field(default_factory=WorkflowConfig)
-    output: OutputConfig = Field(default_factory=OutputConfig)
 
-    @classmethod
-    def build_argument_parser(cls) -> argparse.ArgumentParser:
-        parser = argparse.ArgumentParser(
-            description="Command line arguments for the ESS NMX reduction. "
-            "It assumes 14 Hz pulse speed."
-        )
-        parser = add_args_from_pydantic_model(model_cls=InputConfig, parser=parser)
-        parser = add_args_from_pydantic_model(model_cls=WorkflowConfig, parser=parser)
-        parser = add_args_from_pydantic_model(model_cls=OutputConfig, parser=parser)
-        return parser
+def reduction_config_from_args(args: argparse.Namespace) -> ReductionConfig:
+    return ReductionConfig(
+        inputs=from_args(InputConfig, args),
+        workflow=from_args(WorkflowConfig, args),
+        output=from_args(OutputConfig, args),
+    )
 
-    @classmethod
-    def from_args(cls, args: argparse.Namespace) -> "ReductionConfig":
-        return cls(
-            inputs=from_args(InputConfig, args),
-            workflow=from_args(WorkflowConfig, args),
-            output=from_args(OutputConfig, args),
-        )
 
-    @property
-    def _children(self) -> list[BaseModel]:
-        return [self.inputs, self.workflow, self.output]
+def to_command_arguments(
+    config: ReductionConfig, one_line: bool = True
+) -> list[str] | str:
+    """Convert the config to a list of command line arguments.
 
-    def to_command_arguments(self, one_line: bool = True) -> list[str] | str:
-        """Convert the config to a list of command line arguments.
+    Parameters
+    ----------
+    one_line:
+        If True, return a single string with all arguments joined by spaces.
+        If False, return a list of argument strings.
 
-        Parameters
-        ----------
-        one_line:
-            If True, return a single string with all arguments joined by spaces.
-            If False, return a list of argument strings.
+    """
+    args = {}
+    for instance in config._children:
+        args.update(instance.model_dump(mode='python'))
+    args = {f"--{k.replace('_', '-')}": v for k, v in args.items() if v is not None}
 
-        """
-        args = {}
-        for instance in self._children:
-            args.update(instance.model_dump(mode='python'))
-        args = {f"--{k.replace('_', '-')}": v for k, v in args.items()}
+    arg_list = []
+    for k, v in args.items():
+        if not isinstance(v, bool):
+            arg_list.append(k)
+            if isinstance(v, list):
+                arg_list.extend(str(item) for item in v)
+            elif isinstance(v, enum.StrEnum):
+                arg_list.append(v.value)
+            else:
+                arg_list.append(str(v))
+        elif v is True:
+            arg_list.append(k)
 
-        arg_list = []
-        for k, v in args.items():
-            if not isinstance(v, bool):
-                arg_list.append(k)
-                if isinstance(v, list):
-                    arg_list.extend(str(item) for item in v)
-                elif isinstance(v, enum.StrEnum):
-                    arg_list.append(v.value)
-                else:
-                    arg_list.append(str(v))
-            elif v is True:
-                arg_list.append(k)
-
-        if one_line:
-            return ' '.join(arg_list)
-        else:
-            return arg_list
+    if one_line:
+        return ' '.join(arg_list)
+    else:
+        return arg_list
 
 
 def build_logger(args: argparse.Namespace | OutputConfig) -> logging.Logger:
