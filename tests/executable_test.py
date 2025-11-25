@@ -81,7 +81,11 @@ def test_reduction_config() -> None:
         chunk_size_events=100000,
     )
     workflow_options = WorkflowConfig(
-        nbins=100, min_toa=10, max_toa=100_000, toa_unit=TOAUnit.us, fast_axis='y'
+        nbins=100,
+        min_time_bin=10,
+        max_toa=100_000,
+        time_bin_unit=TOAUnit.us,
+        fast_axis='y',
     )
     output_options = OutputConfig(
         output_file='test-output.h5', compression=Compression.NONE, verbose=True
