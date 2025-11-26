@@ -8,7 +8,7 @@ import scippnexus as snx
 from ess.reduce.streaming import Accumulator
 
 from .mcstas.load import _validate_chunk_size, load_event_data_bank_name
-from .types import DetectorBankPrefix, DetectorName, FilePath
+from .mcstas.types import DetectorBankPrefix, DetectorName, FilePath
 
 
 class MinAccumulator(Accumulator):
