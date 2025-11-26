@@ -12,8 +12,8 @@ except importlib.metadata.PackageNotFoundError:
 del importlib
 
 from .data import small_mcstas_3_sample
-from .reduction import NMXReducedDataGroup
-from .types import MaximumCounts, NMXRawEventCountsDataGroup
+from .mcstas.reduction import NMXReducedDataGroup
+from .mcstas.types import MaximumCounts, NMXRawEventCountsDataGroup
 
 default_parameters = {MaximumCounts: 10000}
 

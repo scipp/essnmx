@@ -6,8 +6,8 @@ from .types import (
     MaximumTimeOfArrival,
     McStasWeight2CountScaleFactor,
     MinimumTimeOfArrival,
-    NMXDetectorMetadata,
-    NMXExperimentMetadata,
+    NMXDetectorMetadataMcStas,
+    NMXExperimentMetadataMcStas,
     NMXReducedCounts,
     NMXReducedDataGroup,
     NMXReducedProbability,
@@ -65,8 +65,8 @@ def raw_event_probability_to_counts(
 def format_nmx_reduced_data(
     da: NMXReducedCounts,
     proton_charge: ProtonCharge,
-    experiment_metadata: NMXExperimentMetadata,
-    detector_metadata: NMXDetectorMetadata,
+    experiment_metadata: NMXExperimentMetadataMcStas,
+    detector_metadata: NMXDetectorMetadataMcStas,
 ) -> NMXReducedDataGroup:
     """Bin time of arrival data into ``time_bin_step`` bins."""
 

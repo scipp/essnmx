@@ -1,4 +1,3 @@
-import enum
 from dataclasses import dataclass
 from typing import Any, NewType
 
@@ -26,10 +25,10 @@ MaximumProbability = NewType("MaximumProbability", sc.Variable)
 McStasWeight2CountScaleFactor = NewType("McStasWeight2CountScaleFactor", sc.Variable)
 """Scale factor to convert McStas weights to counts"""
 
-NMXExperimentMetadata = NewType("NMXExperimentMetadata", sc.DataGroup)
+NMXExperimentMetadataMcStas = NewType("NMXExperimentMetadataMcStas", sc.DataGroup)
 """Metadata of the experiment"""
 
-NMXDetectorMetadata = NewType("NMXDetectorMetadata", sc.DataGroup)
+NMXDetectorMetadataMcStas = NewType("NMXDetectorMetadataMcStas", sc.DataGroup)
 """Metadata of the detector"""
 
 RawEventProbability = NewType("RawEventProbability", sc.DataArray)
@@ -77,20 +76,3 @@ class NMXRawDataMetadata:
     max_probability: MaximumProbability
     min_toa: MinimumTimeOfArrival
     max_toa: MaximumTimeOfArrival
-
-
-class Compression(enum.StrEnum):
-    """Compression type of the output file.
-
-    These options are written as enum for future extensibility.
-    """
-
-    NONE = 'NONE'
-    BITSHUFFLE_LZ4 = 'BITSHUFFLE_LZ4'
-
-
-TofSimulationMinWavelength = NewType("TofSimulationMinWavelength", sc.Variable)
-"""Minimum wavelength for tof simulation to calculate look up table."""
-
-TofSimulationMaxWavelength = NewType("TofSimulationMaxWavelength", sc.Variable)
-"""Maximum wavelength for tof simulation to calculate look up table."""

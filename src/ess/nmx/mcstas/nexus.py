@@ -16,8 +16,8 @@ from .types import (
     DetectorIndex,
     DetectorName,
     FilePath,
-    NMXDetectorMetadata,
-    NMXExperimentMetadata,
+    NMXDetectorMetadataMcStas,
+    NMXExperimentMetadataMcStas,
     NMXReducedDataGroup,
 )
 
@@ -288,7 +288,7 @@ def _add_lauetof_instrument(nx_entry: h5py.Group) -> h5py.Group:
 
 
 def _add_lauetof_source_group(
-    dg: NMXExperimentMetadata, nx_instrument: h5py.Group
+    dg: NMXExperimentMetadataMcStas, nx_instrument: h5py.Group
 ) -> None:
     nx_source = nx_instrument.create_group("source")
     nx_source.attrs["NX_class"] = "NXsource"
@@ -345,7 +345,9 @@ def _add_lauetof_detector_group(dg: sc.DataGroup, nx_instrument: h5py.Group) -> 
     )
 
 
-def _add_lauetof_sample_group(dg: NMXExperimentMetadata, nx_entry: h5py.Group) -> None:
+def _add_lauetof_sample_group(
+    dg: NMXExperimentMetadataMcStas, nx_entry: h5py.Group
+) -> None:
     nx_sample = nx_entry.create_group("sample")
     nx_sample.attrs["NX_class"] = "NXsample"
     _create_dataset_from_var(
@@ -428,7 +430,7 @@ def _add_arbitrary_metadata(
 
 
 def _export_static_metadata_as_nxlauetof(
-    experiment_metadata: NMXExperimentMetadata,
+    experiment_metadata: NMXExperimentMetadataMcStas,
     output_file: str | pathlib.Path | io.BytesIO,
     **arbitrary_metadata: sc.Variable,
 ) -> None:
@@ -465,7 +467,7 @@ def _export_static_metadata_as_nxlauetof(
 
 
 def _export_detector_metadata_as_nxlauetof(
-    *detector_metadatas: NMXDetectorMetadata,
+    *detector_metadatas: NMXDetectorMetadataMcStas,
     output_file: str | pathlib.Path | io.BytesIO,
     append_mode: bool = True,
 ) -> None:
@@ -612,10 +614,10 @@ class NXLauetofWriter:
             target_keys=(NMXReducedDataGroup,),
             accumulators={NMXReducedCounts: EternalAccumulator},
         )
-        self._detector_metas: dict[DetectorName, NMXDetectorMetadata] = {}
+        self._detector_metas: dict[DetectorName, NMXDetectorMetadataMcStas] = {}
         self._detector_reduced: dict[DetectorName, NMXReducedDataGroup] = {}
         _export_static_metadata_as_nxlauetof(
-            experiment_metadata=self._workflow.compute(NMXExperimentMetadata),
+            experiment_metadata=self._workflow.compute(NMXExperimentMetadataMcStas),
             output_file=self._output_filename,
             **(extra_meta or {}),
         )
@@ -636,7 +638,7 @@ class NXLauetofWriter:
             )
 
         _export_detector_metadata_as_nxlauetof(
-            temp_wf.compute(NMXDetectorMetadata),
+            temp_wf.compute(NMXDetectorMetadataMcStas),
             output_file=self._output_filename,
         )
         # First compute static information

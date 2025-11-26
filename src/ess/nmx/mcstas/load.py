@@ -6,7 +6,7 @@ from collections.abc import Generator
 import scipp as sc
 import scippnexus as snx
 
-from ..types import (
+from .types import (
     CrystalRotation,
     DetectorBankPrefix,
     DetectorIndex,
@@ -17,8 +17,8 @@ from ..types import (
     MaximumTimeOfArrival,
     McStasWeight2CountScaleFactor,
     MinimumTimeOfArrival,
-    NMXDetectorMetadata,
-    NMXExperimentMetadata,
+    NMXDetectorMetadataMcStas,
+    NMXExperimentMetadataMcStas,
     NMXRawDataMetadata,
     NMXRawEventCountsDataGroup,
     PixelIds,
@@ -299,9 +299,9 @@ def bank_names_to_detector_names(description: str) -> dict[str, list[str]]:
 
 def load_experiment_metadata(
     instrument: McStasInstrument, crystal_rotation: CrystalRotation
-) -> NMXExperimentMetadata:
+) -> NMXExperimentMetadataMcStas:
     """Load the experiment metadata from the McStas file."""
-    return NMXExperimentMetadata(
+    return NMXExperimentMetadataMcStas(
         sc.DataGroup(
             crystal_rotation=crystal_rotation, **instrument.experiment_metadata()
         )
@@ -310,9 +310,9 @@ def load_experiment_metadata(
 
 def load_detector_metadata(
     instrument: McStasInstrument, detector_name: DetectorName
-) -> NMXDetectorMetadata:
+) -> NMXDetectorMetadataMcStas:
     """Load the detector metadata from the McStas file."""
-    return NMXDetectorMetadata(
+    return NMXDetectorMetadataMcStas(
         sc.DataGroup(**instrument.detector_metadata(detector_name))
     )
 
@@ -320,8 +320,8 @@ def load_detector_metadata(
 def load_mcstas(
     *,
     da: RawEventProbability,
-    experiment_metadata: NMXExperimentMetadata,
-    detector_metadata: NMXDetectorMetadata,
+    experiment_metadata: NMXExperimentMetadataMcStas,
+    detector_metadata: NMXDetectorMetadataMcStas,
 ) -> NMXRawEventCountsDataGroup:
     return NMXRawEventCountsDataGroup(
         sc.DataGroup(weights=da, **experiment_metadata, **detector_metadata)

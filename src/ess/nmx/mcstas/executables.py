@@ -16,14 +16,19 @@ from ess.reduce.streaming import (
     StreamProcessor,
 )
 
-from ..nexus import (
+from ..streaming import calculate_number_of_chunks
+from ..types import Compression
+from . import McStasWorkflow
+from .load import (
+    mcstas_weight_to_probability_scalefactor,
+    raw_event_data_chunk_generator,
+)
+from .nexus import (
     _export_detector_metadata_as_nxlauetof,
     _export_reduced_data_as_nxlauetof,
     _export_static_metadata_as_nxlauetof,
 )
-from ..streaming import calculate_number_of_chunks
-from ..types import (
-    Compression,
+from .types import (
     DetectorIndex,
     DetectorName,
     FilePath,
@@ -32,19 +37,14 @@ from ..types import (
     MaximumTimeOfArrival,
     McStasWeight2CountScaleFactor,
     MinimumTimeOfArrival,
-    NMXDetectorMetadata,
-    NMXExperimentMetadata,
+    NMXDetectorMetadataMcStas,
+    NMXExperimentMetadataMcStas,
     NMXRawDataMetadata,
     NMXReducedCounts,
     NMXReducedDataGroup,
     PixelIds,
     RawEventProbability,
     TimeBinSteps,
-)
-from . import McStasWorkflow
-from .load import (
-    mcstas_weight_to_probability_scalefactor,
-    raw_event_data_chunk_generator,
 )
 from .xml import McStasInstrument
 
@@ -193,12 +193,12 @@ def reduction(
             max_probability=data_metadata.max_probability,
         )
     # Compute metadata and make the skeleton output file
-    experiment_metadata = wf.compute(NMXExperimentMetadata)
+    experiment_metadata = wf.compute(NMXExperimentMetadataMcStas)
     detector_metas = []
     for detector_i in range(3):
         temp_wf = wf.copy()
         temp_wf[DetectorIndex] = detector_i
-        detector_metas.append(temp_wf.compute(NMXDetectorMetadata))
+        detector_metas.append(temp_wf.compute(NMXDetectorMetadataMcStas))
 
     if logger is not None:
         logger.info("Exporting metadata into the output file %s", output_file)
@@ -283,8 +283,72 @@ def _add_mcstas_args(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def build_reduction_arg_parser() -> argparse.ArgumentParser:
+    import warnings
+
+    warnings.warn(
+        "build_reduction_arg_parser is deprecated and will be removed "
+        "in the future release (>=26.11.0) "
+        "Please use the config classes to handle command line arguments.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    parser = argparse.ArgumentParser(
+        description="Command line arguments for the NMX reduction. "
+        "It assumes 14 Hz pulse speed."
+    )
+    input_arg_group = parser.add_argument_group("Input Options")
+    input_arg_group.add_argument(
+        "--input_file", type=str, help="Path to the input file", required=True
+    )
+    input_arg_group.add_argument(
+        "--nbins",
+        type=int,
+        default=50,
+        help="Number of TOF bins",
+    )
+    input_arg_group.add_argument(
+        "--detector_ids",
+        type=int,
+        nargs="+",
+        default=[0, 1, 2],
+        help="Detector indices to process",
+    )
+
+    output_arg_group = parser.add_argument_group("Output Options")
+    output_arg_group.add_argument(
+        "--output_file",
+        type=str,
+        default="scipp_output.h5",
+        help="Path to the output file",
+    )
+    output_arg_group.add_argument(
+        "--compression",
+        type=str,
+        default=Compression.BITSHUFFLE_LZ4.name,
+        choices=[compression_key.name for compression_key in Compression],
+        help="Compress option of reduced output file. Default: BITSHUFFLE_LZ4",
+    )
+    output_arg_group.add_argument(
+        "--verbose", "-v", action="store_true", help="Increase output verbosity"
+    )
+
+    return parser
+
+
 def main() -> None:
-    from .._executable_helper import build_logger, build_reduction_arg_parser
+    import warnings
+
+    from .._executable_helper import build_logger
+
+    warnings.warn(
+        "The 'ess-nmx-mcstas-reduction' executable is deprecated and will be removed "
+        "in the future release (>=26.11.0). "
+        "Please use streaming sampling to make a NeXus file and reduce it "
+        "with the 'essnmx-reduce' executable.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
     parser = build_reduction_arg_parser()
     _add_mcstas_args(parser)
