@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
-from ..types import MaximumCounts
+from .types import MaximumCounts
 
 default_parameters = {MaximumCounts: 10000}
 
@@ -8,7 +8,7 @@ default_parameters = {MaximumCounts: 10000}
 def McStasWorkflow():
     import sciline as sl
 
-    from ess.nmx.reduction import (
+    from ess.nmx.mcstas.reduction import (
         calculate_maximum_toa,
         calculate_minimum_toa,
         format_nmx_reduced_data,
