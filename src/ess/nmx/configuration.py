@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2025 Scipp contributors (https://github.com/scipp)
 import enum
-from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -92,13 +91,6 @@ class WorkflowConfig(BaseModel):
         title="Unit of Time Bins",
         description="Unit of time bins.",
         default=TimeBinUnit.ms,
-    )
-    fast_axis: Literal['x', 'y'] | None = Field(
-        title="Fast Axis",
-        description="Specify the fast axis of the detector. "
-        "If None, it will be determined "
-        "automatically based on the pixel offsets.",
-        default=None,
     )
     tof_lookup_table_file_path: str | None = Field(
         title="TOF Lookup Table File Path",

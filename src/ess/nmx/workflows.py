@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2025 Scipp contributors (https://github.com/scipp)
-from collections.abc import Iterable
+import pathlib
+from collections.abc import Callable, Iterable
 
 import pandas as pd
 import sciline
@@ -9,12 +10,13 @@ import scippnexus as snx
 import tof
 
 from ess.reduce.nexus.types import (
-    Component,
+    EmptyDetector,
     Filename,
     NeXusComponent,
     NeXusName,
+    NeXusTransformation,
     NeXusTransformationChain,
-    RunType,
+    Position,
     SampleRun,
 )
 from ess.reduce.time_of_flight import (
@@ -24,12 +26,13 @@ from ess.reduce.time_of_flight import (
     NumberOfSimulatedNeutrons,
     SimulationResults,
     SimulationSeed,
-    TofDetector,
     TofLookupTableWorkflow,
 )
 from ess.reduce.workflow import register_workflow
 
+from ._io import NMXDetectorMetadata, NMXSampleMetadata, NMXSourceMetadata
 from .types import (
+    NMXCrystalRotation,
     TofSimulationMaxWavelength,
     TofSimulationMinWavelength,
 )
@@ -91,9 +94,9 @@ def _simulate_fixed_wavelength_tof(
 
 
 def _ltotal_range(detector_ltotal: DetectorLtotal[SampleRun]) -> LtotalRange:
-    margin = sc.scalar(0.1, unit='m').to(
+    margin = sc.scalar(0.5, unit='m').to(
         unit=detector_ltotal.unit
-    )  # Hardcoded margin of 10 cm. No reason...
+    )  # Hardcoded margin of 50 cm. It's because the detector width is ~50 cm.
     ltotal_min = sc.min(detector_ltotal) - margin
     ltotal_max = sc.max(detector_ltotal) + margin
     return LtotalRange((ltotal_min, ltotal_max))
@@ -142,9 +145,7 @@ def _concatenate_events_bins(*da: sc.DataArray) -> sc.DataArray:
     return _concatenate(*da)
 
 
-def _get_transformation_chain(
-    detector: NeXusComponent[Component, RunType],
-) -> NeXusTransformationChain[Component, RunType]:
+def _get_transformation_chain(detector: NeXusComponent) -> NeXusTransformationChain:
     """
     Extract the transformation chain from a NeXus detector group.
 
@@ -161,11 +162,11 @@ def _get_transformation_chain(
     import warnings
 
     chain = detector['depends_on']
-
     empty_transformations = [
         transformation
         for transformation in chain.transformations.values()
-        if 'time' in transformation.value.dims
+        if isinstance(transformation, snx.nxtransformations.Transform)
+        and 'time' in transformation.value.dims
         and transformation.sizes['time'] == 0  # empty log
     ]
     if any(empty_transformations):
@@ -180,11 +181,13 @@ def _get_transformation_chain(
         orig_value = sc.scalar(0, unit=orig_value.unit, dtype=orig_value.dtype)
         transformation.value = orig_value
 
-    return NeXusTransformationChain[Component, RunType](chain)
+    return NeXusTransformationChain(chain)
 
 
 def select_detector_names(
-    *, input_files: list[str] | None = None, detector_ids: Iterable[int] = (0, 1, 2)
+    *,
+    input_files: list[pathlib.Path] | None = None,
+    detector_ids: Iterable[int] = (0, 1, 2),
 ):
     if input_files is not None:
         detector_names = []
@@ -203,29 +206,114 @@ def select_detector_names(
 def map_detector_names(
     *,
     wf: sciline.Pipeline,
-    detector_names: list[str] | None = None,
+    detector_names: Iterable[str],
+    mapped_type: type,
+    reduce_func: Callable = _merge_panels,
 ) -> sciline.Pipeline:
     """Map detector indices(`panel`) to detector names in the workflow."""
     detector_name_map = pd.DataFrame({NeXusName[snx.NXdetector]: detector_names})
     detector_name_map.rename_axis(index='panel', inplace=True)
-    wf[TofDetector[SampleRun]] = (
-        wf[TofDetector[SampleRun]].map(detector_name_map).reduce(func=_merge_panels)
-    )
+    wf[mapped_type] = wf[mapped_type].map(detector_name_map).reduce(func=reduce_func)
     return wf
 
 
-def map_file_names(
+def map_file_paths(
     *,
     wf: sciline.Pipeline,
-    file_names: list[str] | None = None,
-    mapped_type: type = TofDetector[SampleRun],
-    reduce_func=_concatenate_events_bins,
+    file_paths: Iterable[pathlib.Path],
+    mapped_type: type,
+    reduce_func: Callable,
 ) -> sciline.Pipeline:
-    """Map detector indices(`panel`) to detector names in the workflow."""
-    file_name_map = pd.DataFrame({Filename[SampleRun]: file_names})
+    """Map file indices(`run`) to file names in the workflow."""
+    file_name_map = pd.DataFrame({Filename[SampleRun]: file_paths})
     file_name_map.rename_axis(index='run', inplace=True)
     wf[mapped_type] = wf[mapped_type].map(file_name_map).reduce(func=reduce_func)
     return wf
+
+
+def assemble_sample_metadata(
+    crystal_rotation: NMXCrystalRotation,
+    sample_position: Position[snx.NXsample, SampleRun],
+    sample_component: NeXusComponent[snx.NXsample, SampleRun],
+) -> NMXSampleMetadata:
+    """Assemble sample metadata for NMX reduction workflow."""
+    return NMXSampleMetadata(
+        sample_name=sample_component['name'],
+        crystal_rotation=crystal_rotation,
+        sample_position=sample_position,
+    )
+
+
+def assemble_source_metadata(
+    source_position: Position[snx.NXsource, SampleRun],
+) -> NMXSourceMetadata:
+    """Assemble source metadata for NMX reduction workflow."""
+    return NMXSourceMetadata(source_position=source_position)
+
+
+def _decide_fast_axis(da: sc.DataArray) -> str:
+    x_slice = da['x_pixel_offset', 0].coords['detector_number']
+    y_slice = da['y_pixel_offset', 0].coords['detector_number']
+
+    if (x_slice.max() < y_slice.max()).value:
+        return 'y'
+    elif (x_slice.max() > y_slice.max()).value:
+        return 'x'
+    else:
+        raise ValueError(
+            "Cannot decide fast axis based on pixel offsets. "
+            "Please specify the fast axis explicitly."
+        )
+
+
+def _decide_step(offsets: sc.Variable) -> sc.Variable:
+    """Decide the step size based on the offsets assuming at least 2 values."""
+    sorted_offsets = sc.sort(offsets, key=offsets.dim, order='ascending')
+    return sorted_offsets[1] - sorted_offsets[0]
+
+
+def _normalize_vector(vec: sc.Variable) -> sc.Variable:
+    return vec / sc.norm(vec)
+
+
+def assemble_detector_metadata(
+    detector_component: NeXusComponent[snx.NXdetector, SampleRun],
+    transformation: NeXusTransformation[snx.NXdetector, SampleRun],
+    source_position: Position[snx.NXsource, SampleRun],
+    empty_detector: EmptyDetector[SampleRun],
+) -> NMXDetectorMetadata:
+    """Assemble detector metadata for NMX reduction workflow."""
+    first_id = empty_detector.coords['detector_number'].min()
+    # Assuming `empty_detector` has (`x_pixel_offset`, `y_pixel_offset`) dims
+    origin = empty_detector.flatten(dims=empty_detector.dims, to='detector_number')[
+        'detector_number', first_id
+    ].coords['position']
+    _fast_axis = _decide_fast_axis(empty_detector)
+    t_unit = transformation.value.unit
+
+    fast_axis_vector = transformation.value * (
+        sc.vector([1.0, 0, 0], unit=t_unit)
+        if _fast_axis == 'x'
+        else sc.vector([0.0, 1, 0], unit=t_unit)
+    )
+    slow_axis_vector = transformation.value * (
+        sc.vector([0.0, 1, 0], unit=t_unit)
+        if _fast_axis == 'x'
+        else sc.vector([1.0, 0, 0], unit=t_unit)
+    )
+    x_pixel_size = _decide_step(empty_detector.coords['x_pixel_offset'])
+    y_pixel_size = _decide_step(empty_detector.coords['y_pixel_offset'])
+    distance = sc.norm(origin - source_position.to(unit=origin.unit))
+
+    return NMXDetectorMetadata(
+        detector_name=detector_component['nexus_component_name'],
+        x_pixel_size=x_pixel_size,
+        y_pixel_size=y_pixel_size,
+        origin_position=origin,
+        fast_axis=_normalize_vector(fast_axis_vector),
+        slow_axis=_normalize_vector(slow_axis_vector),
+        distance=distance,
+    )
 
 
 def NMXWorkflow(tof_simulation: bool = True) -> sciline.Pipeline:
@@ -234,6 +322,8 @@ def NMXWorkflow(tof_simulation: bool = True) -> sciline.Pipeline:
         generic_wf = _patch_workflow_lookup_table_steps(wf=generic_wf)
 
     generic_wf.insert(_get_transformation_chain)
+    generic_wf.insert(assemble_sample_metadata)
+    generic_wf.insert(assemble_source_metadata)
     for key, value in default_parameters.items():
         generic_wf[key] = value
 
