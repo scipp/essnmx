@@ -8,8 +8,8 @@ import sciline as sl
 import scipp as sc
 import scippnexus as snx
 
-from ess.reduce.nexus.types import Filename, NeXusName, SampleRun
-from ess.reduce.time_of_flight.types import TimeOfFlightLookupTable, TofDetector
+from ess.reduce.nexus.types import Filename, NeXusName, RawDetector, SampleRun
+from ess.reduce.time_of_flight.types import TimeOfFlightLookupTable  # , TofDetector
 
 from ._executable_helper import (
     build_logger,
@@ -96,10 +96,11 @@ def _finalize_tof_bin_edges(
     *, tof_das: sc.DataGroup, config: WorkflowConfig
 ) -> sc.Variable:
     tof_bin_edges = sc.concat(
-        tuple(tof_da.coords['tof'] for tof_da in tof_das.values()), dim='tof'
+        tuple(tof_da.coords['event_time_offset'] for tof_da in tof_das.values()),
+        dim='event_time_offset',
     )
     return sc.linspace(
-        dim='tof',
+        dim='event_time_offset',
         start=sc.min(tof_bin_edges),
         stop=sc.max(tof_bin_edges),
         num=config.nbins + 1,
@@ -170,14 +171,16 @@ def reduction(
     for detector_name in detector_names:
         cur_wf = base_wf.copy()
         cur_wf[NeXusName[snx.NXdetector]] = detector_name
-        results = cur_wf.compute((TofDetector[SampleRun], NMXDetectorMetadata))
+        results = cur_wf.compute((RawDetector[SampleRun], NMXDetectorMetadata))
         detector_meta: NMXDetectorMetadata = results[NMXDetectorMetadata]
         export_detector_metadata_as_nxlauetof(
             detector_metadata=detector_meta, output_file=config.output.output_file
         )
         detector_metas[detector_name] = detector_meta
         # Binning into 1 bin and getting final tof bin edges later.
-        tof_das[detector_name] = results[TofDetector[SampleRun]].bin(tof=1)
+        tof_das[detector_name] = results[RawDetector[SampleRun]].bin(
+            event_time_offset=1
+        )
 
     tof_bin_edges = _finalize_tof_bin_edges(tof_das=tof_das, config=config.workflow)
 
@@ -198,7 +201,7 @@ def reduction(
     tof_histograms = sc.DataGroup()
     for detector_name, tof_da in tof_das.items():
         det_meta: NMXDetectorMetadata = detector_metas[detector_name]
-        histogram = tof_da.hist(tof=tof_bin_edges)
+        histogram = tof_da.hist(event_time_offset=tof_bin_edges)
         tof_histograms[detector_name] = histogram
         export_reduced_data_as_nxlauetof(
             detector_name=det_meta.detector_name,

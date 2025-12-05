@@ -416,5 +416,5 @@ def export_reduced_data_as_nxlauetof(
         _create_dataset_from_var(
             name='time_of_flight',
             root_entry=nx_detector,
-            var=sc.midpoints(da.coords['tof'], dim='tof'),
+            var=sc.midpoints(da.coords['event_time_offset'], dim='event_time_offset'),
         )
