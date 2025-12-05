@@ -83,7 +83,12 @@ def _simulate_fixed_wavelength_tof(
     ----------
     """
     source = tof.Source(
-        facility="ess", neutrons=neutrons, pulses=2, seed=seed, wmax=wmax, wmin=wmin
+        facility="ess",
+        neutrons=neutrons,
+        pulses=1,  # NMX does not use pulse-skipping.
+        seed=seed,
+        wmax=wmax,
+        wmin=wmin,
     )
     nmx_det = tof.Detector(distance=max(ltotal_range), name="detector")
     model = tof.Model(source=source, choppers=[], detectors=[nmx_det])
@@ -288,6 +293,7 @@ def compute_lookup_table(
         wf[TimeOfFlightLookupTableFilename] = workflow_config.tof_lookup_table_file_path
     else:
         wf = patch_workflow_lookup_table_steps(wf=wf)
+        wf[NumberOfSimulatedNeutrons] = workflow_config.tof_simulation_num_neutrons
         wmax = sc.scalar(workflow_config.tof_simulation_max_wavelength, unit='angstrom')
         wmin = sc.scalar(workflow_config.tof_simulation_min_wavelength, unit='angstrom')
         wf[TofSimulationMaxWavelength] = wmax
