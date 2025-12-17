@@ -237,8 +237,6 @@ def tof_lut_file_path(tmp_path: pathlib.Path):
     # Change the tof range a bit for testing.
     if isinstance(tof_lut, sc.DataArray):
         tof_lut *= 2
-    elif isinstance(tof_lut, sc.DataGroup):
-        tof_lut['data'] *= 2
     elif is_dataclass(tof_lut):
         tof_lut.array *= 2
     else:
