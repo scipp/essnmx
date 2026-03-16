@@ -47,6 +47,8 @@ idna==3.11
     # via
     #   email-validator
     #   requests
+importlib-metadata==8.7.1
+    # via dask
 kiwisolver==1.4.9
     # via matplotlib
 lazy-loader==0.4
@@ -118,7 +120,7 @@ sciline==25.11.1
     # via
     #   -r base.in
     #   essreduce
-scipp==26.2.0
+scipp==26.3.1
     # via
     #   -r base.in
     #   essreduce
@@ -155,3 +157,5 @@ typing-inspection==0.4.2
     # via pydantic
 urllib3==2.6.3
     # via requests
+zipp==3.23.0
+    # via importlib-metadata
