@@ -9,5 +9,6 @@ sphinx<9.0.0
 sphinx-autodoc-typehints
 sphinx-copybutton
 sphinx-design
+sphinx-reredirects
 pythreejs  # For instrument view.
 scippneutron
