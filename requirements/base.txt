@@ -47,6 +47,8 @@ idna==3.11
     # via
     #   email-validator
     #   requests
+importlib-metadata==9.0.0
+    # via dask
 kiwisolver==1.5.0
     # via matplotlib
 lazy-loader==0.5
@@ -155,3 +157,5 @@ typing-inspection==0.4.2
     # via pydantic
 urllib3==2.6.3
     # via requests
+zipp==3.23.1
+    # via importlib-metadata
