@@ -9,11 +9,11 @@ bitshuffle==0.5.2 ; os_name == "posix"
     # via -r basetest.in
 cython==3.2.4
     # via bitshuffle
-h5py==3.15.1
+h5py==3.16.0
     # via bitshuffle
 iniconfig==2.3.0
     # via pytest
-numpy==2.4.2
+numpy==2.4.4
     # via
     #   bitshuffle
     #   h5py
@@ -21,9 +21,9 @@ packaging==26.0
     # via pytest
 pluggy==1.6.0
     # via pytest
-pygments==2.19.2
+pygments==2.20.0
     # via pytest
-pytest==9.0.2
+pytest==9.0.3
     # via -r basetest.in
 
 # The following packages are considered to be unsafe in a requirements file:
