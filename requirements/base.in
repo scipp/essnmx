@@ -7,7 +7,7 @@ essreduce>=26.2.1,<=26.2.1
 graphviz
 plopp>=24.7.0
 sciline>=24.06.0
-scipp>=25.3.0
+scipp>=26.7.0
 scippnexus>=23.12.0
 scippneutron>=26.02.0
 pooch>=1.5
