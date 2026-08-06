@@ -178,7 +178,7 @@ def export_static_metadata_as_nxlauetof(
     with snx.File(output_file, "w") as f:
         f._group.attrs["NX_class"] = "NXlauetof"
         nx_entry = f.create_class(name='entry', class_name='NXlauetof')
-        nx_entry.create_field('definitions', value='NXlauetof')
+        nx_entry.create_field('definition', value='NXlauetof')
         nx_entry['sample'] = sample_metadata
         nx_entry['reducer'] = program
 
